@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: suqcheck-api
+    name: suq-check-api
     runtime: python
     plan: free
     region: oregon

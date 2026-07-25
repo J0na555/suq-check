@@ -62,15 +62,18 @@ Every push to `main` redeploys. Confirm a deploy with `/healthz`, which answers
 without touching Postgres:
 
 ```bash
-curl https://suqcheck-api.onrender.com/healthz
+curl https://suq-check-api.onrender.com/healthz
 ```
 
 The free instance sleeps after inactivity, so the first request following an
-idle period takes about 50 seconds.
+idle period takes about 50 seconds. A newly created `.onrender.com` hostname
+also returns a plain-text 404 with an `x-render-routing: no-server` header from
+some edge locations for the first few minutes; that clears itself and does not
+mean the deploy failed.
 
 ## Frontend contract
 
-- Base URL: `https://suqcheck-api.onrender.com` deployed, `http://127.0.0.1:8000` locally
+- Base URL: `https://suq-check-api.onrender.com` deployed, `http://127.0.0.1:8000` locally
 - OpenAPI document: `../contracts/openapi.yaml`
 - Upload endpoints use `multipart/form-data` with an `image` field
 - Manual evidence uses JSON
