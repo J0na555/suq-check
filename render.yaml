@@ -29,3 +29,17 @@ services:
       # Priced in the unit-economics / cost model at $0.30 / $2.50 per 1M tokens.
       - key: GEMINI_MODEL
         value: gemini-2.5-flash
+  - type: web
+    name: suq-check-dashboard
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: dashboard
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22.17.0
+      - key: NEXT_PUBLIC_API_URL
+        value: https://suq-check-api.onrender.com
