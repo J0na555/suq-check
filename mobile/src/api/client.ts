@@ -138,11 +138,22 @@ function photoPart(photo: Photo): { uri: string; name: string; type: string } {
   return { uri: photo.uri, name, type };
 }
 
-/** Uploads are `multipart/form-data` with a field named `image`. */
-export async function postImage<Result>(path: string, photo: Photo): Promise<Result> {
+/**
+ * Uploads are `multipart/form-data` with a field named `image`. Some carry text
+ * fields beside it: a price list is attributed to the store the shopper chose,
+ * never to a store guessed from the photo.
+ */
+export async function postImage<Result>(
+  path: string,
+  photo: Photo,
+  fields: Record<string, string> = {},
+): Promise<Result> {
   const form = new FormData();
   // React Native's FormData takes this shape rather than a Blob.
   form.append('image', photoPart(photo) as unknown as Blob);
+  for (const [name, value] of Object.entries(fields)) {
+    form.append(name, value);
+  }
 
   return (await send(withQuery(path), {
     method: 'POST',

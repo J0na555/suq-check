@@ -1,25 +1,22 @@
 /**
  * Type a price in by hand.
  *
- * The store list comes from the stores already pricing the chosen product,
- * because the API has no endpoint that lists stores on their own. That is a
- * genuine constraint, not a design choice, and it is why this form asks for the
- * product first.
+ * Product and store are chosen through the shared picker, which explains why
+ * the product comes first: it is the only route the API offers to a store id.
  */
 
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { ProductSummary } from '../../api/endpoints';
-import { useManualReport, useProductSearch, useProductStores } from '../../api/queries';
+import { useManualReport } from '../../api/queries';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { DecisionCard } from '../../components/DecisionCard';
 import { SectionHeader } from '../../components/layout';
 import { messageFor } from '../../components/ScreenState';
-import { categoryLabel, etb } from '../../lib/format';
-import { useDebounced } from '../../lib/useDebounced';
 import { colors, radius, spacing, type as typography } from '../../theme/tokens';
+import { StorePicker } from './StorePicker';
 
 type SourceType = 'community' | 'store_visit';
 
@@ -35,9 +32,6 @@ export function ManualFlow() {
   const [price, setPrice] = useState('');
   const [sourceType, setSourceType] = useState<SourceType>('store_visit');
 
-  const query = useDebounced(term, 300);
-  const products = useProductSearch(product ? '' : query.trim(), null);
-  const stores = useProductStores(product?.id ?? '', null, 5_000);
   const report = useManualReport();
 
   const priceEtb = Number(price.replace(',', '.'));
@@ -66,78 +60,21 @@ export function ManualFlow() {
 
   return (
     <>
-      <Card>
-        <SectionHeader title="Which product?" />
-        {product ? (
-          <Pressable style={styles.selected} onPress={() => setProduct(null)}>
-            <View style={styles.selectedText}>
-              <Text style={styles.selectedName}>{product.canonical_name}</Text>
-              <Text style={styles.selectedMeta}>
-                Market price {etb(product.market_price_etb)} ETB - tap to change
-              </Text>
-            </View>
-          </Pressable>
-        ) : (
-          <>
-            <TextInput
-              value={term}
-              onChangeText={setTerm}
-              placeholder="Search the catalog"
-              placeholderTextColor={colors.textFaint}
-              autoCapitalize="none"
-              autoCorrect={false}
-              style={styles.input}
-            />
-            {products.data?.items.slice(0, 6).map((candidate) => (
-              <Pressable
-                key={candidate.id}
-                style={styles.option}
-                onPress={() => {
-                  setProduct(candidate);
-                  setStoreId(null);
-                }}
-              >
-                <Text style={styles.optionLabel}>{candidate.canonical_name}</Text>
-                <Text style={styles.optionMeta}>{categoryLabel(candidate.category)}</Text>
-              </Pressable>
-            ))}
-            {query.trim() !== '' && products.data?.items.length === 0 ? (
-              <Text style={styles.note}>
-                Nothing matches. Only products SuqCheck already tracks can take a report.
-              </Text>
-            ) : null}
-          </>
-        )}
-      </Card>
-
-      {product ? (
-        <Card>
-          <SectionHeader title="Which store?" hint="Stores already pricing this product" />
-          {stores.isPending ? (
-            <Text style={styles.note}>Loading stores</Text>
-          ) : stores.isError ? (
-            <Text style={styles.note}>{messageFor(stores.error)}</Text>
-          ) : stores.data.items.length === 0 ? (
-            <Text style={styles.note}>
-              No store reports this product yet, so there is nowhere to attach a price. A shelf photo
-              is the way in.
-            </Text>
-          ) : (
-            stores.data.items.map((store) => (
-              <Pressable
-                key={store.id}
-                style={[styles.option, storeId === store.id && styles.optionActive]}
-                onPress={() => setStoreId(store.id)}
-              >
-                <Text style={styles.optionLabel}>{store.name}</Text>
-                <Text style={styles.optionMeta}>
-                  {store.district} - currently {etb(store.price_etb)} ETB
-                </Text>
-              </Pressable>
-            ))
-          )}
-        </Card>
-      ) : null}
+      <StorePicker
+        term={term}
+        onTerm={setTerm}
+        product={product}
+        onProduct={setProduct}
+        storeId={storeId}
+        onStore={(store) => setStoreId(store?.id ?? null)}
+        labels={{
+          productTitle: 'Which product?',
+          storeTitle: 'Which store?',
+          storeHint: 'Stores already pricing this product',
+          emptyStores:
+            'No store reports this product yet, so there is nowhere to attach a price. A shelf photo is the way in.',
+        }}
+      />
 
       {product && storeId ? (
         <Card>
@@ -222,22 +159,6 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.textMuted,
   },
-  selected: {
-    backgroundColor: colors.brandSoft,
-    borderRadius: radius.md,
-    padding: spacing.md,
-  },
-  selectedText: {
-    gap: 2,
-  },
-  selectedName: {
-    ...typography.bodyStrong,
-    color: colors.brandDark,
-  },
-  selectedMeta: {
-    ...typography.caption,
-    color: colors.brandDark,
-  },
   sources: {
     marginBottom: spacing.md,
   },
@@ -248,13 +169,6 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.low,
     marginTop: spacing.md,
-  },
-  note: {
-    ...typography.caption,
-    color: colors.textMuted,
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: radius.sm,
-    padding: spacing.md,
   },
   footnote: {
     ...typography.caption,

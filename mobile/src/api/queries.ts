@@ -90,6 +90,16 @@ export function useShelfUpload(): UseMutationResult<api.ShelfUploadResponse, Err
   return useMutation({ mutationFn: api.uploadShelfTag });
 }
 
+export function usePriceListUpload(): UseMutationResult<
+  api.PriceListUploadResponse,
+  Error,
+  { photo: Photo; storeId: string }
+> {
+  return useMutation({
+    mutationFn: ({ photo, storeId }) => api.uploadPriceList(photo, storeId),
+  });
+}
+
 export function useIdentify(): UseMutationResult<api.ProductIdentification, Error, Photo> {
   return useMutation({ mutationFn: api.identifyProduct });
 }

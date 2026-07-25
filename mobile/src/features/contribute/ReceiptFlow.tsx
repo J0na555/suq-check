@@ -20,6 +20,7 @@ import { PhotoPicker } from '../../components/PhotoPicker';
 import { messageFor } from '../../components/ScreenState';
 import { etb } from '../../lib/format';
 import { colors, radius, spacing, type as typography } from '../../theme/tokens';
+import { ExtractionLines } from './ExtractionLines';
 
 export function ReceiptFlow() {
   const [photo, setPhoto] = useState<Photo | null>(null);
@@ -73,31 +74,10 @@ export function ReceiptFlow() {
               value={`${Math.round(result.extraction.ocr_confidence * 100)}%`}
             />
 
-            <View style={styles.lines}>
-              {result.extraction.items.map((line, index) => (
-                <View key={`${line.raw_text}-${index}`} style={styles.line}>
-                  <View style={styles.lineText}>
-                    <Text style={styles.lineRaw} numberOfLines={1}>
-                      {line.raw_text}
-                    </Text>
-                    <Text style={styles.lineMatch}>
-                      {line.matched_product_name
-                        ? `${line.matched_product_name} - ${Math.round(
-                            line.match_confidence * 100,
-                          )}% match`
-                        : 'Not in the catalog, so it was not recorded'}
-                    </Text>
-                  </View>
-                  <Text style={styles.linePrice}>{etb(line.unit_price_etb)} ETB</Text>
-                </View>
-              ))}
-            </View>
-
-            {result.extraction.items.length === 0 ? (
-              <Text style={styles.note}>
-                Nothing legible was found on that photo. A flatter, brighter shot usually reads.
-              </Text>
-            ) : null}
+            <ExtractionLines
+              items={result.extraction.items}
+              emptyNote="Nothing legible was found on that photo. A flatter, brighter shot usually reads."
+            />
           </Card>
 
           <Card>
@@ -131,33 +111,6 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.low,
     marginTop: spacing.md,
-  },
-  lines: {
-    marginTop: spacing.md,
-  },
-  line: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
-  },
-  lineText: {
-    flex: 1,
-    gap: 2,
-  },
-  lineRaw: {
-    ...typography.bodyStrong,
-    color: colors.text,
-  },
-  lineMatch: {
-    ...typography.caption,
-    color: colors.textMuted,
-  },
-  linePrice: {
-    ...typography.bodyStrong,
-    color: colors.text,
   },
   decisions: {
     gap: spacing.md,

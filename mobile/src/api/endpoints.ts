@@ -31,6 +31,8 @@ export type ManualEvidenceRequest = Schemas['ManualEvidenceRequest'];
 export type ManualEvidenceResponse = Schemas['ManualEvidenceResponse'];
 export type NearbyStorePrice = Schemas['NearbyStorePrice'];
 export type NearbyStoresResponse = Schemas['NearbyStoresResponse'];
+export type PriceListExtraction = Schemas['PriceListExtraction'];
+export type PriceListUploadResponse = Schemas['PriceListUploadResponse'];
 export type ProductDetail = Schemas['ProductDetail'];
 export type ProductIdentification = Schemas['ProductIdentification'];
 export type ProductListResponse = Schemas['ProductListResponse'];
@@ -75,6 +77,9 @@ export const uploadReceipt = (photo: Photo) =>
 
 export const uploadShelfTag = (photo: Photo) =>
   postImage<ShelfUploadResponse>('/api/evidence/shelf', photo);
+
+export const uploadPriceList = (photo: Photo, storeId: string) =>
+  postImage<PriceListUploadResponse>('/api/evidence/price-list', photo, { store_id: storeId });
 
 export const identifyProduct = (photo: Photo) =>
   postImage<ProductIdentification>('/api/scan/identify', photo);

@@ -45,7 +45,7 @@ stage.
 | `app/` | Routes. `expo-router` maps files to screens |
 | `src/api/` | The generated contract types, the fetch client, and query hooks |
 | `src/components/` | Presentation pieces shared by more than one screen |
-| `src/features/contribute/` | The three submission flows: receipt, shelf tag, by hand |
+| `src/features/contribute/` | The four submission flows: receipt, shelf tag, price list, by hand |
 | `src/lib/` | Formatting, photo capture, small hooks |
 | `src/theme/` | Colour, spacing, and type tokens |
 
@@ -66,5 +66,8 @@ Two rules worth keeping:
   ordered by price.
 - Uploads must be JPEG, PNG, or WebP under 8MB. The client compresses before
   sending.
-- Receipt lines that match nothing come back in the extraction with no decision,
-  and are shown as unrecorded rather than as a failure.
+- Receipt and price-list lines that match nothing come back in the extraction
+  with no decision, and are shown as unrecorded rather than as a failure.
+- Nothing lists stores on their own. The only route to a store id is the stores
+  already pricing some product, which is why both the price-list and by-hand
+  flows ask for a product before a shop.

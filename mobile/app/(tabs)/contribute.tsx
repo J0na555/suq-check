@@ -2,20 +2,30 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { ManualFlow } from '../../src/features/contribute/ManualFlow';
+import { PriceListFlow } from '../../src/features/contribute/PriceListFlow';
 import { ReceiptFlow } from '../../src/features/contribute/ReceiptFlow';
 import { ShelfFlow } from '../../src/features/contribute/ShelfFlow';
 import { colors, radius, spacing, type as typography } from '../../src/theme/tokens';
 
-type Mode = 'receipt' | 'shelf' | 'manual';
+type Mode = 'receipt' | 'shelf' | 'price_list' | 'manual';
 
 const MODES: { value: Mode; label: string }[] = [
   { value: 'receipt', label: 'Receipt' },
   { value: 'shelf', label: 'Shelf tag' },
+  { value: 'price_list', label: 'Price list' },
   { value: 'manual', label: 'By hand' },
 ];
 
+const FLOWS: Record<Mode, React.ComponentType> = {
+  receipt: ReceiptFlow,
+  shelf: ShelfFlow,
+  price_list: PriceListFlow,
+  manual: ManualFlow,
+};
+
 export default function ContributeScreen() {
   const [mode, setMode] = useState<Mode>('receipt');
+  const Flow = FLOWS[mode];
 
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -28,14 +38,17 @@ export default function ContributeScreen() {
             accessibilityState={{ selected: mode === option.value }}
             style={[styles.tab, mode === option.value && styles.tabActive]}
           >
-            <Text style={[styles.tabLabel, mode === option.value && styles.tabLabelActive]}>
+            <Text
+              style={[styles.tabLabel, mode === option.value && styles.tabLabelActive]}
+              numberOfLines={1}
+            >
               {option.label}
             </Text>
           </Pressable>
         ))}
       </View>
 
-      {mode === 'receipt' ? <ReceiptFlow /> : mode === 'shelf' ? <ShelfFlow /> : <ManualFlow />}
+      <Flow />
     </ScrollView>
   );
 }
