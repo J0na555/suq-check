@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "SuqCheck",
+    "slug": "suqcheck",
+    "scheme": "suqcheck",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "SuqCheck uses the camera to read receipts and shelf price tags.",
+          "photosPermission": "SuqCheck uploads receipt photos you choose from your library."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "SuqCheck uses your location to show which nearby shops are cheapest."
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.suqcheck.app"
+    },
+    "android": {
+      "package": "com.suqcheck.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#E7F3ED",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
