@@ -39,5 +39,5 @@ npm run build
 
 ## Deployment
 
-`render.yaml` defines the dashboard as a separate Render Node web service.
-Configure `NEXT_PUBLIC_API_URL` before the production build.
+Production: [https://suq-check.vercel.app/](https://suq-check.vercel.app/).
+Set `NEXT_PUBLIC_API_URL` in the Vercel project env before the production build.
