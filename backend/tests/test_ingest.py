@@ -33,6 +33,9 @@ STORES = {store.name: store for store in read_stores()}
 
 OIL = PRODUCTS["Hayat Cooking Oil 1L"]
 SUGAR = PRODUCTS["Shega White Sugar 1kg"]
+# Thin coverage stays out of the weekly visit pass, so one receipt can still
+# move the market estimate instead of drowning in thousands of visit rows.
+THIN = PRODUCTS["San Marco Pasta 500g"]
 SELAM_MART = STORES["Selam Mart"]
 
 JPEG = ("receipt.jpg", b"not-really-an-image", "image/jpeg")
@@ -198,19 +201,19 @@ async def test_accepted_evidence_moves_the_estimate_and_keeps_the_thumbnail(
     writable_session: AsyncSession,
     gemini_receipt,
 ) -> None:
-    before = await _market_price(writable_session, SUGAR.id)
-    gemini_receipt(receipt((SUGAR.canonical_name, round(before * 1.2, 2))))
+    before = await _market_price(writable_session, THIN.id)
+    gemini_receipt(receipt((THIN.canonical_name, round(before * 1.2, 2))))
 
     response = writing_client.post("/api/evidence/receipt", files={"image": JPEG}, headers=DEVICE)
     assert response.json()["decisions"][0]["status"] == "accepted"
 
     writable_session.expire_all()
-    after = await _market_price(writable_session, SUGAR.id)
+    after = await _market_price(writable_session, THIN.id)
     assert after > before
 
     stored = await writable_session.scalar(
         select(Evidence)
-        .where(Evidence.product_id == SUGAR.id, Evidence.source_type == EvidenceSource.RECEIPT)
+        .where(Evidence.product_id == THIN.id, Evidence.source_type == EvidenceSource.RECEIPT)
         .order_by(Evidence.created_at.desc())
     )
     assert stored.raw_payload["device_id"] == DEVICE["X-Device-Id"]

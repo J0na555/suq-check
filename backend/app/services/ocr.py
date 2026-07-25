@@ -1,4 +1,4 @@
-"""Gemini reads receipts, shelf tags, and product photos.
+"""Gemini reads receipts, shelf tags, price lists, and product photos.
 
 Every call pins `temperature=0.1` and hands Gemini a JSON schema it must fill,
 so the output is a model instance rather than prose to parse. Amharic receipts
@@ -12,6 +12,7 @@ SDK's import cost at boot to do it.
 
 from dataclasses import dataclass
 from datetime import date
+from enum import StrEnum
 from functools import lru_cache
 from typing import Any
 
@@ -21,6 +22,14 @@ from app.config import get_settings
 
 TEMPERATURE = 0.1
 MAX_CANDIDATES = 5
+
+
+class MediaResolution(StrEnum):
+    """Token budget for image inputs. High costs roughly 7x medium."""
+
+    MEDIUM = "MEDIA_RESOLUTION_MEDIUM"
+    HIGH = "MEDIA_RESOLUTION_HIGH"
+
 
 RECEIPT_PROMPT = """
 You are reading a supermarket or shop receipt from Addis Ababa, Ethiopia.
@@ -42,6 +51,23 @@ The price is in Ethiopian birr and may be written in Amharic numerals.
 Copy the product description exactly as printed into `raw_product_text` and
 report the shelf price in `price_etb`. If the tag shows both a unit price and a
 pack price, report the pack price. Set `ocr_confidence` from 0 to 1.
+""".strip()
+
+PRICE_LIST_PROMPT = """
+You are reading a shop's legally posted retail price list from Addis Ababa,
+Ethiopia, as required under Trade Competition and Consumer Protection Authority
+Directive 159/2024. The list is typically a paper sheet or board near the
+entrance or till. Text may be in Amharic, English, or both; prices are
+Ethiopian birr and may use Amharic numerals.
+
+Return every priced product line you can read — typically around 25 items on a
+full list. Copy each product description exactly as printed into `raw_text`,
+including brand and pack size when shown. Put the posted unit price in
+`price_etb`. Ignore headers, footers, store stamps, dates used only as
+decoration, and any line without a readable price.
+
+Set `ocr_confidence` to how legible the whole list was, from 0 to 1.
+Leave a field null rather than guessing it.
 """.strip()
 
 IDENTIFY_PROMPT = """
@@ -97,6 +123,30 @@ class ShelfTag(BaseModel):
     ocr_confidence: float = Field(ge=0, le=1)
 
 
+class PriceListLine(BaseModel):
+    raw_text: str
+    price_etb: float = Field(gt=0)
+
+
+class PriceListDocument(BaseModel):
+    store_name: str | None = None
+    observed_on: str | None = Field(
+        default=None,
+        description="ISO date printed on the price list, if any.",
+    )
+    ocr_confidence: float = Field(ge=0, le=1)
+    items: list[PriceListLine] = Field(default_factory=list)
+
+    @property
+    def observed_date(self) -> date | None:
+        if not self.observed_on:
+            return None
+        try:
+            return date.fromisoformat(self.observed_on[:10])
+        except ValueError:
+            return None
+
+
 class IdentifiedProduct(BaseModel):
     canonical_name: str
     brand: str
@@ -139,6 +189,7 @@ async def _ask[Answer: BaseModel](
     *,
     image: bytes | None = None,
     mime_type: str = "image/jpeg",
+    media_resolution: MediaResolution | None = None,
 ) -> Answer:
     client = _client()
     from google.genai import types
@@ -147,15 +198,19 @@ async def _ask[Answer: BaseModel](
     if image is not None:
         parts.insert(0, types.Part.from_bytes(data=image, mime_type=mime_type))
 
+    config_kwargs: dict[str, Any] = {
+        "temperature": TEMPERATURE,
+        "response_mime_type": "application/json",
+        "response_schema": answer,
+    }
+    if media_resolution is not None:
+        config_kwargs["media_resolution"] = types.MediaResolution(media_resolution.value)
+
     try:
         response = await client.aio.models.generate_content(
             model=get_settings().gemini_model,
             contents=parts,
-            config=types.GenerateContentConfig(
-                temperature=TEMPERATURE,
-                response_mime_type="application/json",
-                response_schema=answer,
-            ),
+            config=types.GenerateContentConfig(**config_kwargs),
         )
     except Exception as error:  # the SDK raises its own hierarchy
         raise ExtractionError(f"Gemini call failed: {error}") from error
@@ -169,11 +224,27 @@ async def _ask[Answer: BaseModel](
 
 
 async def extract_receipt(image: bytes, mime_type: str = "image/jpeg") -> ReceiptDocument:
-    return await _ask(ReceiptDocument, RECEIPT_PROMPT, image=image, mime_type=mime_type)
+    return await _ask(
+        ReceiptDocument,
+        RECEIPT_PROMPT,
+        image=image,
+        mime_type=mime_type,
+        media_resolution=MediaResolution.MEDIUM,
+    )
 
 
 async def extract_shelf_tag(image: bytes, mime_type: str = "image/jpeg") -> ShelfTag:
     return await _ask(ShelfTag, SHELF_PROMPT, image=image, mime_type=mime_type)
+
+
+async def extract_price_list(image: bytes, mime_type: str = "image/jpeg") -> PriceListDocument:
+    return await _ask(
+        PriceListDocument,
+        PRICE_LIST_PROMPT,
+        image=image,
+        mime_type=mime_type,
+        media_resolution=MediaResolution.HIGH,
+    )
 
 
 async def identify_product(image: bytes, mime_type: str = "image/jpeg") -> IdentifiedProduct:

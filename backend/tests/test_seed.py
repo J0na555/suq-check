@@ -1,17 +1,35 @@
 """The committed CSVs, the evidence generator, and what the seed leaves behind."""
 
+from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
+from itertools import pairwise
 from pathlib import Path
+from uuid import UUID
 
 import pytest
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Evidence, PriceEstimate, PriceHistory, Product, Store
-from app.models.enums import EvidenceStatus, ProductCategory, SizeUnit
+from app.models.enums import (
+    EvidenceSource,
+    EvidenceStatus,
+    ProductCategory,
+    SizeUnit,
+    StoreKind,
+)
 from app.seed import Coverage, SeedDataError, read_products, read_stores
 from app.seed.catalog import product_id
-from app.seed.generator import PROFILES, SEED_DAYS, generate_evidence, shelf_price
+from app.seed.generator import (
+    PROFILES,
+    SEED_DAYS,
+    SKUS_PER_VISIT,
+    VISIT_INTERVAL_DAYS,
+    VISIT_WEEKS,
+    generate_evidence,
+    generate_store_visit_evidence,
+    shelf_price,
+)
 
 NOW = datetime(2026, 7, 25, 12, 0, tzinfo=timezone.utc)
 PRODUCTS = read_products()
@@ -30,11 +48,37 @@ STORE_HEADER = "name,chain,district,latitude,longitude,kind"
 
 
 def test_the_committed_catalog_parses() -> None:
-    assert len(PRODUCTS) >= 5
-    assert len(STORES) >= 5
+    assert len(PRODUCTS) == 40
+    assert len(STORES) == 120
+    assert {store.district for store in STORES} == {"Bole", "Yeka", "Arada"}
+    assert all(
+        sum(1 for store in STORES if store.district == district) == 40
+        for district in ("Bole", "Yeka", "Arada")
+    )
     assert {product.category for product in PRODUCTS} <= set(ProductCategory)
     assert {product.size_unit for product in PRODUCTS} <= set(SizeUnit)
     assert all(product.base_price_etb > 0 for product in PRODUCTS)
+    samanu = {"Tena", "Chef Luca", "555", "Aura", "Astco", "Aquasafe"}
+    assert sum(1 for product in PRODUCTS if product.brand in samanu) == 10
+
+
+def test_every_researched_price_clears_the_gate_the_seed_will_face(
+    migration_bounds: tuple[tuple[str, str, str, str], ...],
+) -> None:
+    """A base price outside its category bounds has the gate reject its own seed."""
+    ranges = {
+        (category, size_unit): (float(minimum), float(maximum))
+        for category, size_unit, minimum, maximum in migration_bounds
+    }
+
+    for product in PRODUCTS:
+        pack = (product.category.value, product.size_unit.value)
+        assert pack in ranges, f"{product.canonical_name}: no bounds for {pack[0]}/{pack[1]}"
+        low, high = ranges[pack]
+        assert low <= product.base_price_etb <= high, (
+            f"{product.canonical_name} at {product.base_price_etb} ETB "
+            f"is outside the {low}-{high} ETB range the gate allows"
+        )
 
 
 def test_ids_are_derived_from_the_catalog_row_not_invented() -> None:
@@ -42,6 +86,45 @@ def test_ids_are_derived_from_the_catalog_row_not_invented() -> None:
 
     assert oil.id == product_id("Hayat", "Hayat Cooking Oil 1L", 1, SizeUnit.LITER)
     assert oil.id == product_id("  hayat  ", "hayat cooking oil 1l", 1, SizeUnit.LITER)
+
+
+def test_weekly_store_visits_cover_the_pitch_volume() -> None:
+    visits = generate_store_visit_evidence(PRODUCTS, STORES, now=NOW)
+    physical = [store for store in STORES if store.kind is not StoreKind.ONLINE]
+
+    assert len(visits) == len(physical) * VISIT_WEEKS * SKUS_PER_VISIT
+    assert {item.source_type for item in visits} == {EvidenceSource.STORE_VISIT}
+    assert len({item.store.id for item in visits}) == len(physical)
+    # Thin and stale stay out so the confidence screen still has a story.
+    visited = {item.product_id for item in visits}
+    for product in PRODUCTS:
+        if product.coverage in (Coverage.THIN, Coverage.STALE):
+            assert product.id not in visited
+        else:
+            assert product.id in visited
+    again = generate_store_visit_evidence(PRODUCTS, STORES, now=NOW)
+    assert [item.price_etb for item in visits] == [item.price_etb for item in again]
+
+
+def test_a_shop_keeps_its_shelf_and_gets_visited_once_a_week() -> None:
+    visits = generate_store_visit_evidence(PRODUCTS, STORES, now=NOW)
+
+    shelves: dict[UUID, set[UUID]] = defaultdict(set)
+    visit_days: dict[UUID, set[date]] = defaultdict(set)
+    for item in visits:
+        shelves[item.store.id].add(item.product_id)
+        visit_days[item.store.id].add(item.observed_at.date())
+
+    for store_id, days in visit_days.items():
+        # One shelf, read whole, on each of `VISIT_WEEKS` days exactly a week apart.
+        assert len(shelves[store_id]) == SKUS_PER_VISIT
+        assert len(days) == VISIT_WEEKS
+        ordered = sorted(days)
+        gaps = {(later - earlier).days for earlier, later in pairwise(ordered)}
+        assert gaps == {VISIT_INTERVAL_DAYS}
+
+    # The city is not all visited on a Monday: the round fills the whole week.
+    assert len({min(days).weekday() for days in visit_days.values()}) == VISIT_INTERVAL_DAYS
 
 
 def test_a_blank_line_in_the_middle_is_skipped(tmp_path: Path) -> None:
@@ -189,6 +272,24 @@ async def test_the_seed_prices_every_product_through_the_engine(session: AsyncSe
         assert market.price_etb > 0
         assert market.breakdown["factors"]
         assert market.evidence_count > 0
+
+
+@pytest.mark.asyncio
+async def test_a_full_round_of_weekly_visits_reaches_the_database(
+    session: AsyncSession,
+) -> None:
+    """The seed runs the visit pass too, not only the per-product walk."""
+    physical = [store for store in STORES if store.kind is not StoreKind.ONLINE]
+    cells_this_week = await session.scalar(
+        select(func.count())
+        .select_from(Evidence)
+        .where(
+            Evidence.source_type == EvidenceSource.STORE_VISIT,
+            Evidence.observed_at > NOW - timedelta(days=VISIT_INTERVAL_DAYS),
+        )
+    )
+
+    assert cells_this_week >= len(physical) * SKUS_PER_VISIT
 
 
 @pytest.mark.asyncio

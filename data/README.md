@@ -1,8 +1,9 @@
 # Catalog research
 
-Two CSVs feed `python -m app.seed`. The example rows are real products and real
-Addis stores; add more rows in the same shape. Target: about 120 products across
-the fourteen supported categories and about 46 stores.
+Two CSVs feed `python -m app.seed`. The rows are real products and real Addis
+stores; add more in the same shape. The committed files hold the basket the
+pitch describes: 40 products across the fourteen supported categories, and 120
+shops split evenly between Bole, Yeka, and Arada.
 
 ## products.csv
 
@@ -37,8 +38,17 @@ verification gate, so keep `base_price_etb` plausible for the pack size.
 | --- | --- |
 | `name` | Branch name as written on the shop |
 | `chain` | Empty for independent shops |
-| `district` | Addis district or sub-city: `Piassa`, `Bole`, `Yeka` |
+| `district` | Exactly one of `Bole`, `Yeka`, `Arada` |
 | `latitude`, `longitude` | Decimal degrees; the app measures distance from these |
 | `kind` | `supermarket`, `shop`, or `online` |
 
-Online sellers still need coordinates; use the city centre.
+`district` is free text in the database, so a neighbourhood written where a
+sub-city belongs — `Piassa` instead of `Arada` — silently splits the district
+breakdown in two. Write the sub-city, and put the neighbourhood in `name`.
+
+Online sellers still need coordinates; use the city centre. They are the only
+kind the seed's weekly store-visit pass skips, since nobody walks into a website.
+
+`scripts/build_stores_csv.py` regenerates this file from a hand-written list of
+names and chains, spreading coordinates over a bounding box per district. Edit
+the script rather than the CSV when adding shops in bulk.

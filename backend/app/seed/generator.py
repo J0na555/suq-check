@@ -1,9 +1,10 @@
 """Invent sixty days of plausible evidence for a catalog row.
 
-Deterministic: the random stream is seeded from the product id, so re-running
-the seed reproduces the same prices and the demo tells the same story twice.
-Nothing here touches the database or decides a confidence score; the engine does
-that from the rows this module returns.
+Deterministic: the random stream is seeded from the product id (or store id for
+the weekly visit pass), so re-running the seed reproduces the same prices and
+the demo tells the same story twice. Nothing here touches the database or
+decides a confidence score; the engine does that from the rows this module
+returns.
 """
 
 from collections.abc import Sequence
@@ -16,6 +17,13 @@ from app.models.enums import EvidenceSource, ProductCategory, StoreKind
 from app.seed.catalog import Coverage, ProductRow, StoreRow
 
 SEED_DAYS = 60
+
+# One ambassador visit per store per week for eight weeks, reading ~28 SKUs from
+# the posted price list. Across 119 physical shops that is about 3,300 priced
+# cells a week, which is the number the cost-per-observation story rests on.
+VISIT_WEEKS = 8
+VISIT_INTERVAL_DAYS = 7
+SKUS_PER_VISIT = 28
 
 # Cooking oil climbing and sugar easing off give Market Pulse real movers
 # instead of noise. Expressed as the total drift across the whole window.
@@ -40,6 +48,7 @@ SOURCE_MIX: tuple[tuple[EvidenceSource, float], ...] = (
 OCR_CONFIDENCE: dict[EvidenceSource, tuple[float, float]] = {
     EvidenceSource.RECEIPT: (0.86, 0.99),
     EvidenceSource.SHELF_PHOTO: (0.80, 0.97),
+    EvidenceSource.STORE_VISIT: (0.90, 0.99),
 }
 
 
@@ -108,6 +117,27 @@ def shelf_price(value: float) -> float:
     return round(value * 2) / 2
 
 
+def _level_at(product: ProductRow, *, age_days: int, days: int) -> float:
+    """Price level so age_days=0 sits at the researched base price."""
+    drift = CATEGORY_DRIFT.get(product.category, 0.0)
+    step = (1 + drift) ** (1 / days)
+    level = (1 / (1 + drift)) * (step ** (days - age_days))
+    return min(max(level, LEVEL_FLOOR), LEVEL_CEILING)
+
+
+def _visit_basket(products: Sequence[ProductRow], rng: Random) -> list[ProductRow]:
+    """Pick the SKUs a visit would photograph, leaving thin/stale for the walk."""
+    tracked = [
+        product
+        for product in products
+        if product.coverage not in (Coverage.THIN, Coverage.STALE)
+    ]
+    if not tracked:
+        tracked = list(products)
+    count = min(SKUS_PER_VISIT, len(tracked))
+    return rng.sample(tracked, count)
+
+
 def generate_evidence(
     product: ProductRow,
     stores: Sequence[StoreRow],
@@ -155,5 +185,61 @@ def generate_evidence(
                     observed_at=_observed_at(now, age_days, rng),
                 )
             )
+
+    return generated
+
+
+def generate_store_visit_evidence(
+    products: Sequence[ProductRow],
+    stores: Sequence[StoreRow],
+    *,
+    now: datetime,
+    days: int = SEED_DAYS,
+    weeks: int = VISIT_WEEKS,
+) -> list[GeneratedEvidence]:
+    """One weekly store visit per shop for `weeks`, photographing ~28 SKUs each.
+
+    Runs alongside the product-centric walk. Thin and stale products stay out of
+    the visit basket so their coverage profiles still read on the confidence
+    screen.
+    """
+    if not products or not stores:
+        return []
+
+    # Nobody walks into a website, so online sellers sit this pass out.
+    physical = [store for store in stores if store.kind is not StoreKind.ONLINE]
+    generated: list[GeneratedEvidence] = []
+    for store in physical:
+        rng = Random(f"visit:{store.id}")
+        multiplier = rng.uniform(*STORE_MULTIPLIER)
+        # A shop keeps the same shelf and the same visiting day week to week, so
+        # the round reads as a hundred-odd visits spread across the week rather
+        # than every ambassador in the city reporting on the same Monday.
+        basket = _visit_basket(products, rng)
+        weekday = rng.randrange(VISIT_INTERVAL_DAYS)
+        for week in range(weeks):
+            age_days = weekday + week * VISIT_INTERVAL_DAYS
+            if age_days >= days:
+                break
+
+            observed = _observed_at(now, age_days, rng)
+            for product in basket:
+                level = _level_at(product, age_days=age_days, days=days)
+                price = (
+                    product.base_price_etb
+                    * level
+                    * multiplier
+                    * (1 + rng.gauss(0, PER_REPORT_NOISE))
+                )
+                generated.append(
+                    GeneratedEvidence(
+                        product_id=product.id,
+                        store=store,
+                        price_etb=shelf_price(price),
+                        source_type=EvidenceSource.STORE_VISIT,
+                        ocr_confidence=_ocr_confidence(EvidenceSource.STORE_VISIT, rng),
+                        observed_at=observed,
+                    )
+                )
 
     return generated

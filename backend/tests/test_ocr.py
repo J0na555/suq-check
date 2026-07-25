@@ -17,6 +17,8 @@ from app.services.ocr import (
     CatalogChoice,
     ExtractionError,
     IdentifiedProduct,
+    MediaResolution,
+    PriceListDocument,
     ReceiptDocument,
     ShelfTag,
 )
@@ -41,6 +43,19 @@ RECEIPT_JSON = json.dumps(
 )
 
 SHELF_JSON = json.dumps({"raw_product_text": "Ambo 1L", "price_etb": 32, "ocr_confidence": 0.9})
+
+PRICE_LIST_JSON = json.dumps(
+    {
+        "store_name": "Selam Mart",
+        "observed_on": "2026-07-20",
+        "ocr_confidence": 0.91,
+        "items": [
+            {"raw_text": "TENA COOKING OIL 1L", "price_etb": 355.0},
+            {"raw_text": "CHEF LUCA SPAGHETTI 500G", "price_etb": 95.0},
+            {"raw_text": "አስትኮ ዱቄት 1ኪ.ግ", "price_etb": 95.0},
+        ],
+    }
+)
 
 
 class FakeCall:
@@ -82,9 +97,32 @@ async def test_a_receipt_call_sends_the_image_before_the_prompt(gemini) -> None:
     assert image_part.inline_data.data == IMAGE
     assert image_part.inline_data.mime_type == "image/png"
     assert prompt == ocr.RECEIPT_PROMPT
+    assert call.kwargs["config"].media_resolution.value == MediaResolution.MEDIUM
     assert receipt.store_name == "Selam Mart"
     assert receipt.observed_date == date(2026, 7, 20)
     assert receipt.items[0].unit_price_etb == 340.0
+
+
+@pytest.mark.asyncio
+async def test_a_price_list_call_uses_high_resolution_and_the_directive_prompt(
+    gemini,
+) -> None:
+    call = gemini(PRICE_LIST_JSON)
+
+    document = await ocr.extract_price_list(IMAGE, "image/png")
+
+    image_part, prompt = call.kwargs["contents"]
+    assert image_part.inline_data.data == IMAGE
+    assert prompt == ocr.PRICE_LIST_PROMPT
+    assert "Directive 159/2024" in prompt
+    assert "Amharic" in prompt
+    config = call.kwargs["config"]
+    assert config.media_resolution.value == MediaResolution.HIGH
+    assert config.response_schema is PriceListDocument
+    assert document.store_name == "Selam Mart"
+    assert document.observed_date == date(2026, 7, 20)
+    assert len(document.items) == 3
+    assert document.items[0].price_etb == 355.0
 
 
 @pytest.mark.asyncio
@@ -99,6 +137,7 @@ async def test_every_call_pins_the_temperature_the_schema_and_the_configured_mod
     assert config.temperature == ocr.TEMPERATURE
     assert config.response_mime_type == "application/json"
     assert config.response_schema is ShelfTag
+    assert config.media_resolution is None
     assert call.kwargs["model"] == ocr.get_settings().gemini_model
 
 

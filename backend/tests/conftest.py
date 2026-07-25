@@ -75,6 +75,12 @@ async def _build(url: str) -> None:
 
 
 @pytest.fixture(scope="session")
+def migration_bounds() -> tuple[tuple[str, str, str, str], ...]:
+    """The ranges the gate judges against, read from the migration that ships them."""
+    return _migration_bounds()
+
+
+@pytest.fixture(scope="session")
 def seeded_url(tmp_path_factory: pytest.TempPathFactory) -> str:
     path = tmp_path_factory.mktemp("suqcheck") / "seeded.sqlite"
     url = f"{SQLITE_PREFIX}{path}"

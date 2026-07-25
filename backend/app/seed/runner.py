@@ -22,7 +22,13 @@ from app.models.price import PriceEstimate, PriceHistory
 from app.models.product import Product, ProductAlias
 from app.models.store import Store
 from app.seed.catalog import Coverage, ProductRow, StoreRow, read_products, read_stores
-from app.seed.generator import SEED_DAYS, GeneratedEvidence, generate_evidence, shelf_price
+from app.seed.generator import (
+    SEED_DAYS,
+    GeneratedEvidence,
+    generate_evidence,
+    generate_store_visit_evidence,
+    shelf_price,
+)
 from app.services.normalize import canonicalize
 from app.services.price_engine import LOOKBACK_DAYS, recompute_product
 from app.services.verification import submit_evidence
@@ -75,6 +81,9 @@ async def seed_database(
     generated: list[GeneratedEvidence] = []
     for product in catalog:
         generated.extend(generate_evidence(product, locations, now=moment, days=days))
+    generated.extend(
+        generate_store_visit_evidence(catalog, locations, now=moment, days=days)
+    )
     await _insert_evidence(session, generated)
 
     # The engine only looks back thirty days, so history for the older half of
