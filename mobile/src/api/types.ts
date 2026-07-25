@@ -140,6 +140,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/evidence/price-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload Price List */
+        post: operations["upload_price_list_api_evidence_price_list_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/evidence/shelf": {
         parameters: {
             query?: never;
@@ -208,6 +225,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/analytics/unit-economics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Unit Economics */
+        get: operations["get_unit_economics_api_analytics_unit_economics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -219,6 +253,20 @@ export interface components {
              * @description JPEG, PNG, or WebP product image.
              */
             image: string;
+        };
+        /** Body_upload_price_list_api_evidence_price_list_post */
+        Body_upload_price_list_api_evidence_price_list_post: {
+            /**
+             * Image
+             * @description JPEG, PNG, or WebP posted price-list image.
+             */
+            image: string;
+            /**
+             * Store Id
+             * Format: uuid
+             * @description Store where the price list was photographed.
+             */
+            store_id: string;
         };
         /** Body_upload_receipt_api_evidence_receipt_post */
         Body_upload_receipt_api_evidence_receipt_post: {
@@ -268,6 +316,24 @@ export interface components {
             weight: number;
             /** Detail */
             detail: string;
+        };
+        /** CostBenchmark */
+        CostBenchmark: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Min Etb */
+            min_etb: number;
+            /** Max Etb */
+            max_etb: number;
+            /**
+             * Unit
+             * @description What one unit of this benchmark buys.
+             */
+            unit: string;
+            /** Source */
+            source: string;
         };
         /**
          * ErrorResponse
@@ -482,6 +548,28 @@ export interface components {
             market_price_etb: number;
             /** Items */
             items: components["schemas"]["NearbyStorePrice"][];
+        };
+        /** PriceListExtraction */
+        PriceListExtraction: {
+            /**
+             * Store Id
+             * Format: uuid
+             */
+            store_id: string;
+            /** Store Name */
+            store_name: string;
+            /** Observed On */
+            observed_on?: string | null;
+            /** Ocr Confidence */
+            ocr_confidence: number;
+            /** Items */
+            items: components["schemas"]["ExtractedLineItem"][];
+        };
+        /** PriceListUploadResponse */
+        PriceListUploadResponse: {
+            extraction: components["schemas"]["PriceListExtraction"];
+            /** Decisions */
+            decisions: components["schemas"]["EvidenceDecision"][];
         };
         /** ProductDetail */
         ProductDetail: {
@@ -705,6 +793,25 @@ export interface components {
             extraction: components["schemas"]["ShelfExtraction"];
             decision: components["schemas"]["EvidenceDecision"];
         };
+        /** SourceEconomics */
+        SourceEconomics: {
+            /** Source Type */
+            source_type: string;
+            /** Observations */
+            observations: number;
+            /** Verified Observations */
+            verified_observations: number;
+            /** Prompt Tokens */
+            prompt_tokens: number;
+            /** Candidates Tokens */
+            candidates_tokens: number;
+            /** Total Tokens */
+            total_tokens: number;
+            /** Gemini Cost Etb */
+            gemini_cost_etb: number;
+            /** Cost Per Verified Observation Etb */
+            cost_per_verified_observation_etb?: number | null;
+        };
         /** SourceSummary */
         SourceSummary: {
             /**
@@ -771,6 +878,37 @@ export interface components {
             period_days: number;
             /** Items */
             items: components["schemas"]["ProductTrend"][];
+        };
+        /** UnitEconomicsResponse */
+        UnitEconomicsResponse: {
+            /** Period Days */
+            period_days: number;
+            /** Observations */
+            observations: number;
+            /** Verified Observations */
+            verified_observations: number;
+            /** Prompt Tokens */
+            prompt_tokens: number;
+            /** Candidates Tokens */
+            candidates_tokens: number;
+            /** Total Tokens */
+            total_tokens: number;
+            /** Gemini Cost Usd */
+            gemini_cost_usd: number;
+            /** Gemini Cost Etb */
+            gemini_cost_etb: number;
+            /** Cost Per Verified Observation Etb */
+            cost_per_verified_observation_etb?: number | null;
+            /** Usd To Etb */
+            usd_to_etb: number;
+            /** Gemini Input Usd Per Mtok */
+            gemini_input_usd_per_mtok: number;
+            /** Gemini Output Usd Per Mtok */
+            gemini_output_usd_per_mtok: number;
+            /** By Source */
+            by_source: components["schemas"]["SourceEconomics"][];
+            /** Benchmarks */
+            benchmarks: components["schemas"]["CostBenchmark"][];
         };
         /** ValidationError */
         ValidationError: {
@@ -1098,6 +1236,87 @@ export interface operations {
             };
         };
     };
+    upload_price_list_api_evidence_price_list_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Anonymous device identifier used for rate limiting. */
+                "X-Device-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_price_list_api_evidence_price_list_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceListUploadResponse"];
+                };
+            };
+            /** @description The report names a store that does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The image is larger than 8MB. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The image must be one of image/jpeg, image/png, image/webp. */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description The per-device or per-network upload limit was reached. The `Retry-After` header carries the wait in seconds. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The image could not be read; ask the shopper to retake it. */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     upload_shelf_photo_api_evidence_shelf_post: {
         parameters: {
             query?: never;
@@ -1323,6 +1542,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TrendsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_unit_economics_api_analytics_unit_economics_get: {
+        parameters: {
+            query?: {
+                period_days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitEconomicsResponse"];
                 };
             };
             /** @description Validation Error */
