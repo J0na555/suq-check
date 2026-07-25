@@ -28,7 +28,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Market Pulse',
+          title: 'SuqCheck',
           tabBarLabel: 'Pulse',
           tabBarIcon: ({ color, size }) => <Ionicons name="pulse" color={color} size={size} />,
         }}

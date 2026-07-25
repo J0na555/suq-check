@@ -1,5 +1,5 @@
 /**
- * Market Pulse: the first screen, and the one every launch hits.
+ * Pulse: the first screen, and the one every launch hits.
  *
  * The recent-verification list at the bottom is deliberate. It shows the gate
  * accepting, holding, and rejecting real submissions, which is what separates
