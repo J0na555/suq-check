@@ -149,14 +149,11 @@ Dashboard: overview KPIs, product table with confidence, trends, coverage gaps, 
 
 Keep it minimal but the price engine is non-negotiable, since a silent bug there ruins the demo. Pytest cases covering weighted median, each confidence sub-score, the staleness cap, gate accept/pending/reject boundaries, and alias matching. Roughly 15 tests.
 
-## Team split and timeline (4 people, 48h)
+## Team split and timeline
 
-- A: schema, migrations, price engine, verification, tests
-- B: Gemini OCR, normalization, scrapers
-- C: Expo app
-- D: seed data, dashboard, deploy, pitch
+Two coders (one backend, one frontend) plus two non-coders. Hour-by-hour tracks, shared-file rules, and non-coder assignments live in [split.md](split.md).
 
-Hours 0 to 3 freeze the OpenAPI contract and commit fixture JSON so C and D build against mocks and never block. 3 to 10 parallel build. 10 to 20 integration. 20 to 30 scrapers, history, map, polish. 30 to 40 feature freeze and rehearsal. 40 to 48 buffer, two full rehearsals, recorded backup video.
+The load-bearing idea: a stub API returning fixture JSON is deployed in hour 2, so the frontend builds against the real URL from the start and the backend replaces fixtures endpoint by endpoint. There is no integration day.
 
 ## Risks and fallbacks
 
