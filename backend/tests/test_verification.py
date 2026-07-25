@@ -56,14 +56,16 @@ def test_agreeing_price_is_accepted() -> None:
     assert decision.reason == "Price agrees with the 340 ETB market estimate within 2.9%."
 
 
-def test_deviation_just_under_forty_percent_still_accepts() -> None:
-    decision = gate(475)
+def test_deviation_just_under_thirty_five_percent_still_accepts() -> None:
+    # 340 * 1.35 = 459 → just under PENDING_DEVIATION (0.35)
+    decision = gate(458)
 
     assert decision.status == EvidenceStatus.ACCEPTED
 
 
-def test_deviation_at_forty_percent_pends() -> None:
-    decision = gate(476)
+def test_deviation_at_thirty_five_percent_pends() -> None:
+    # deviation == PENDING_DEVIATION enters the pending band
+    decision = gate(459)
 
     assert decision.status == EvidenceStatus.PENDING
 

@@ -23,7 +23,7 @@ from app.models.product import Product
 from app.services.price_engine import recompute_product
 
 MIN_TRUSTED_CONFIDENCE = 60
-PENDING_DEVIATION = 0.40
+PENDING_DEVIATION = 0.35
 REJECT_DEVIATION = 1.50
 
 UNIT_LABELS: dict[SizeUnit, str] = {
