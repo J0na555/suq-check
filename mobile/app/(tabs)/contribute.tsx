@@ -8,7 +8,7 @@ import { colors, radius, spacing, type as typography } from '../../src/theme/tok
 
 type Mode = 'receipt' | 'shelf' | 'manual';
 
-const MODES: Array<{ value: Mode; label: string }> = [
+const MODES: { value: Mode; label: string }[] = [
   { value: 'receipt', label: 'Receipt' },
   { value: 'shelf', label: 'Shelf tag' },
   { value: 'manual', label: 'By hand' },

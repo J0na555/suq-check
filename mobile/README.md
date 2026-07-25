@@ -13,6 +13,11 @@ npm start
 Scan the QR code with Expo Go. The app points at the deployed API by default, so
 there is nothing to configure to see real responses.
 
+This project targets **Expo SDK 54** on purpose. Expo Go carries one SDK version
+at a time, and SDK 54 is what the Play Store and App Store ship, so any teammate
+can scan the QR code without sideloading anything. Upgrading the SDK ahead of the
+store build would lock everyone out of Expo Go.
+
 `npm run web` opens the same app in a browser, which is the quickest way to check
 layout and data. Camera capture and location need a real device, so the scan and
 receipt flows can only be exercised through Expo Go.

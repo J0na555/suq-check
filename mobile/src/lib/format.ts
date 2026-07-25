@@ -65,7 +65,7 @@ export function distance(metres: number | null | undefined): string | null {
 export function timeAgo(iso: string, now: Date = new Date()): string {
   const seconds = Math.max((now.getTime() - new Date(iso).getTime()) / 1000, 0);
   if (seconds < 60) return 'just now';
-  const units: Array<[number, string]> = [
+  const units: [number, string][] = [
     [60, 'minute'],
     [3600, 'hour'],
     [86_400, 'day'],

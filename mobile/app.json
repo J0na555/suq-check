@@ -22,7 +22,8 @@
         {
           "locationAlwaysAndWhenInUsePermission": "SuqCheck uses your location to show which nearby shops are cheapest."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "ios": {
       "supportsTablet": true,

@@ -23,7 +23,7 @@ import { colors, radius, spacing, type as typography } from '../../theme/tokens'
 
 type SourceType = 'community' | 'store_visit';
 
-const SOURCE_CHOICES: Array<{ value: SourceType; label: string; hint: string }> = [
+const SOURCE_CHOICES: { value: SourceType; label: string; hint: string }[] = [
   { value: 'store_visit', label: 'I saw it in the store', hint: 'Weighted higher' },
   { value: 'community', label: 'Someone told me', hint: 'Weighted lower' },
 ];
