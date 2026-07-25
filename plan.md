@@ -44,6 +44,8 @@ Deferred: fresh produce, eggs, meat, teff. Quality, weight, and freshness vary, 
 
 ## Repo layout
 
+- `contracts/openapi.yaml` and `contracts/fixtures/*.json` the shared boundary between the two coders
+- `data/products.csv`, `data/stores.csv` researched by the non-coders, read by the seed script
 - `backend/app/` with `api/`, `models/`, `schemas/`, `services/`, `seed/`
 - `backend/scrapers/` one module per source plus a shared `ScrapedItem` contract
 - `mobile/` Expo app
@@ -118,7 +120,7 @@ Amharic receipts are the main accuracy risk. Mitigation: the app shows the extra
 - `GET /api/stores/{id}`
 - `POST /api/evidence/receipt` | `/shelf` | `/manual`
 - `POST /api/scan/identify`
-- `GET /api/analytics/trends` | `/coverage` | `/districts`
+- `GET /api/analytics/trends` for the dashboard trends page. District averages feed the cheapest-district figure inside `/api/pulse`, and a separate `/coverage` endpoint is cut along with the dashboard page that would have consumed it
 - `GET /healthz`
 
 Rate-limit the upload endpoints per device and per IP. Combined with source weighting, anonymous community reports can never meaningfully move a price on their own, which is the answer to the inevitable abuse question.
@@ -143,7 +145,7 @@ Leave several products thin and stale on purpose. A confidence score that is alw
 
 Mobile: Pulse home, search results, product detail (big price, confidence ring, expandable why panel, store list, history sparkline, source list), scan, contribute with extraction review, nearby map.
 
-Dashboard: overview KPIs, product table with confidence, trends, coverage gaps, stores and districts, and a live ingestion log showing each evidence row with its source and gate decision. The ingestion log is what makes it read as infrastructure rather than a lookup table.
+Dashboard: three pages only, since one frontend developer owns both surfaces. Overview KPIs, a live ingestion log showing each evidence row with its source and gate decision, and trends. The ingestion log is what makes it read as infrastructure rather than a lookup table, so it survives even if trends is cut. The coverage-gaps, product-table, and districts pages are cut outright.
 
 ## Testing
 
