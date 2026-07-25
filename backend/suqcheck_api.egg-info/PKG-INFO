@@ -1,0 +1,13 @@
+Metadata-Version: 2.4
+Name: suqcheck-api
+Version: 0.1.0
+Summary: Evidence-backed pricing intelligence API
+Requires-Python: >=3.12
+Requires-Dist: fastapi>=0.116
+Requires-Dist: pydantic-settings>=2.10
+Requires-Dist: python-multipart>=0.0.20
+Requires-Dist: uvicorn[standard]>=0.35
+Provides-Extra: dev
+Requires-Dist: httpx>=0.28; extra == "dev"
+Requires-Dist: pytest>=8.4; extra == "dev"
+Requires-Dist: pyyaml>=6.0; extra == "dev"

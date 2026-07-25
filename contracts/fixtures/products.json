@@ -1,0 +1,40 @@
+{
+  "total": 3,
+  "limit": 20,
+  "offset": 0,
+  "items": [
+    {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "canonical_name": "Hayat Cooking Oil 1L",
+      "brand": "Hayat",
+      "category": "cooking_oil",
+      "size_label": "1 L",
+      "market_price_etb": 340,
+      "confidence": 98,
+      "confidence_band": "high",
+      "thumbnail_url": null
+    },
+    {
+      "id": "22222222-2222-4222-8222-222222222222",
+      "canonical_name": "Shega White Sugar 1kg",
+      "brand": "Shega",
+      "category": "sugar",
+      "size_label": "1 kg",
+      "market_price_etb": 205,
+      "confidence": 91,
+      "confidence_band": "high",
+      "thumbnail_url": null
+    },
+    {
+      "id": "33333333-3333-4333-8333-333333333333",
+      "canonical_name": "Lifebuoy Soap 175g",
+      "brand": "Lifebuoy",
+      "category": "soap",
+      "size_label": "175 g",
+      "market_price_etb": 82,
+      "confidence": 58,
+      "confidence_band": "low",
+      "thumbnail_url": null
+    }
+  ]
+}

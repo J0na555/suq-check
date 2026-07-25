@@ -1,0 +1,41 @@
+{
+  "metrics": {
+    "verified_prices_today": 2483,
+    "products_covered": 127,
+    "stores_reporting": 46,
+    "new_receipts_today": 183,
+    "average_confidence": 94
+  },
+  "movers": [
+    {
+      "product_id": "11111111-1111-4111-8111-111111111111",
+      "product_name": "Hayat Cooking Oil 1L",
+      "kind": "fastest_rising",
+      "value": 5.2,
+      "display_value": "+5.2%"
+    },
+    {
+      "product_id": "22222222-2222-4222-8222-222222222222",
+      "product_name": "Shega White Sugar 1kg",
+      "kind": "largest_drop",
+      "value": -3.1,
+      "display_value": "-3.1%"
+    },
+    {
+      "product_id": "33333333-3333-4333-8333-333333333333",
+      "product_name": "Lifebuoy Soap 175g",
+      "kind": "most_stable",
+      "value": 0.2,
+      "display_value": "+0.2%"
+    },
+    {
+      "product_id": "11111111-1111-4111-8111-111111111111",
+      "product_name": "Hayat Cooking Oil 1L",
+      "kind": "most_verified",
+      "value": 98,
+      "display_value": "98% confidence"
+    }
+  ],
+  "cheapest_district": "Piassa",
+  "most_active_store": "Selam Mart"
+}

@@ -1,0 +1,1353 @@
+openapi: 3.1.0
+info:
+  title: SuqCheck API
+  description: Evidence-backed price estimates for packaged household essentials in
+    Ethiopia.
+  version: 0.1.0
+paths:
+  /healthz:
+    get:
+      tags:
+      - system
+      summary: Health
+      operationId: health_healthz_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /api/pulse:
+    get:
+      tags:
+      - market
+      summary: Get Pulse
+      operationId: get_pulse_api_pulse_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PulseResponse'
+  /api/products:
+    get:
+      tags:
+      - products
+      summary: List Products
+      operationId: list_products_api_products_get
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Q
+      - name: category
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - cooking_oil
+            - sugar
+            - rice
+            - flour
+            - salt
+            - pasta
+            - coffee
+            - tea
+            - milk
+            - soap
+            - detergent
+            - toothpaste
+            - shampoo
+            - bottled_water
+            type: string
+          - type: 'null'
+          title: Category
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Offset
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductListResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/products/{product_id}:
+    get:
+      tags:
+      - products
+      summary: Get Product
+      operationId: get_product_api_products__product_id__get
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Product Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/products/{product_id}/stores:
+    get:
+      tags:
+      - products
+      summary: List Product Stores
+      operationId: list_product_stores_api_products__product_id__stores_get
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Product Id
+      - name: latitude
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: number
+            maximum: 90
+            minimum: -90
+          - type: 'null'
+          title: Latitude
+      - name: longitude
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: number
+            maximum: 180
+            minimum: -180
+          - type: 'null'
+          title: Longitude
+      - name: radius_m
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 50000
+          minimum: 100
+          default: 5000
+          title: Radius M
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NearbyStoresResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/stores/{store_id}:
+    get:
+      tags:
+      - stores
+      summary: Get Store
+      operationId: get_store_api_stores__store_id__get
+      parameters:
+      - name: store_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Store Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StoreDetail'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/evidence/receipt:
+    post:
+      tags:
+      - evidence
+      summary: Upload Receipt
+      operationId: upload_receipt_api_evidence_receipt_post
+      parameters:
+      - name: X-Device-Id
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Device-Id
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_receipt_api_evidence_receipt_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReceiptUploadResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/evidence/shelf:
+    post:
+      tags:
+      - evidence
+      summary: Upload Shelf Photo
+      operationId: upload_shelf_photo_api_evidence_shelf_post
+      parameters:
+      - name: X-Device-Id
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Device-Id
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_shelf_photo_api_evidence_shelf_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShelfUploadResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/evidence/manual:
+    post:
+      tags:
+      - evidence
+      summary: Submit Manual Evidence
+      operationId: submit_manual_evidence_api_evidence_manual_post
+      parameters:
+      - name: X-Device-Id
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Device-Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManualEvidenceRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManualEvidenceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/scan/identify:
+    post:
+      tags:
+      - scan
+      summary: Identify Product
+      operationId: identify_product_api_scan_identify_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_identify_product_api_scan_identify_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductIdentification'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/analytics/trends:
+    get:
+      tags:
+      - analytics
+      summary: Get Trends
+      operationId: get_trends_api_analytics_trends_get
+      parameters:
+      - name: period_days
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 90
+          minimum: 2
+          default: 7
+          title: Period Days
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrendsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    Body_identify_product_api_scan_identify_post:
+      properties:
+        image:
+          type: string
+          contentMediaType: application/octet-stream
+          title: Image
+          description: JPEG, PNG, or WebP product image.
+      type: object
+      required:
+      - image
+      title: Body_identify_product_api_scan_identify_post
+    Body_upload_receipt_api_evidence_receipt_post:
+      properties:
+        image:
+          type: string
+          contentMediaType: application/octet-stream
+          title: Image
+          description: JPEG, PNG, or WebP receipt image.
+      type: object
+      required:
+      - image
+      title: Body_upload_receipt_api_evidence_receipt_post
+    Body_upload_shelf_photo_api_evidence_shelf_post:
+      properties:
+        image:
+          type: string
+          contentMediaType: application/octet-stream
+          title: Image
+          description: JPEG, PNG, or WebP shelf photo.
+      type: object
+      required:
+      - image
+      title: Body_upload_shelf_photo_api_evidence_shelf_post
+    ConfidenceBreakdown:
+      properties:
+        score:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Score
+        band:
+          type: string
+          enum:
+          - high
+          - medium
+          - low
+          title: Band
+        factors:
+          items:
+            $ref: '#/components/schemas/ConfidenceFactor'
+          type: array
+          title: Factors
+        capped:
+          type: boolean
+          title: Capped
+          default: false
+        cap_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cap Reason
+      type: object
+      required:
+      - score
+      - band
+      - factors
+      title: ConfidenceBreakdown
+    ConfidenceFactor:
+      properties:
+        name:
+          type: string
+          enum:
+          - volume
+          - agreement
+          - freshness
+          - diversity
+          title: Name
+        score:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Score
+        weight:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Weight
+        detail:
+          type: string
+          title: Detail
+      type: object
+      required:
+      - name
+      - score
+      - weight
+      - detail
+      title: ConfidenceFactor
+    EvidenceDecision:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        product_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Product Id
+        product_name:
+          type: string
+          title: Product Name
+        price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Price Etb
+        source_type:
+          type: string
+          enum:
+          - partner
+          - receipt
+          - scrape
+          - store_visit
+          - shelf_photo
+          - community
+          title: Source Type
+        status:
+          type: string
+          enum:
+          - accepted
+          - pending
+          - rejected
+          title: Status
+        reason:
+          type: string
+          title: Reason
+      type: object
+      required:
+      - id
+      - product_name
+      - price_etb
+      - source_type
+      - status
+      - reason
+      title: EvidenceDecision
+    ExtractedLineItem:
+      properties:
+        raw_text:
+          type: string
+          title: Raw Text
+        quantity:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Quantity
+          default: 1
+        unit_price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Unit Price Etb
+        total_price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Total Price Etb
+        matched_product_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Matched Product Id
+        matched_product_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Matched Product Name
+        match_confidence:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Match Confidence
+      type: object
+      required:
+      - raw_text
+      - unit_price_etb
+      - total_price_etb
+      - match_confidence
+      title: ExtractedLineItem
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    HealthResponse:
+      properties:
+        status:
+          type: string
+          const: ok
+          title: Status
+        fixtures:
+          type: boolean
+          title: Fixtures
+        checked_at:
+          type: string
+          format: date-time
+          title: Checked At
+      type: object
+      required:
+      - status
+      - fixtures
+      - checked_at
+      title: HealthResponse
+    HistoryPoint:
+      properties:
+        day:
+          type: string
+          format: date
+          title: Day
+        price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Price Etb
+        evidence_count:
+          type: integer
+          minimum: 0.0
+          title: Evidence Count
+      type: object
+      required:
+      - day
+      - price_etb
+      - evidence_count
+      title: HistoryPoint
+    ManualEvidenceRequest:
+      properties:
+        product_id:
+          type: string
+          format: uuid
+          title: Product Id
+        store_id:
+          type: string
+          format: uuid
+          title: Store Id
+        price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Price Etb
+        observed_at:
+          type: string
+          format: date-time
+          title: Observed At
+        source_type:
+          type: string
+          enum:
+          - store_visit
+          - community
+          title: Source Type
+          default: community
+      type: object
+      required:
+      - product_id
+      - store_id
+      - price_etb
+      - observed_at
+      title: ManualEvidenceRequest
+    ManualEvidenceResponse:
+      properties:
+        decision:
+          $ref: '#/components/schemas/EvidenceDecision'
+      type: object
+      required:
+      - decision
+      title: ManualEvidenceResponse
+    NearbyStorePrice:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        name:
+          type: string
+          title: Name
+        district:
+          type: string
+          title: District
+        kind:
+          type: string
+          enum:
+          - supermarket
+          - shop
+          - online
+          title: Kind
+        latitude:
+          type: number
+          title: Latitude
+        longitude:
+          type: number
+          title: Longitude
+        price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Price Etb
+        confidence:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Confidence
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+        distance_m:
+          anyOf:
+          - type: integer
+            minimum: 0.0
+          - type: 'null'
+          title: Distance M
+        difference_from_market_etb:
+          type: number
+          title: Difference From Market Etb
+        verdict:
+          type: string
+          enum:
+          - cheap
+          - fair
+          - high
+          title: Verdict
+      type: object
+      required:
+      - id
+      - name
+      - district
+      - kind
+      - latitude
+      - longitude
+      - price_etb
+      - confidence
+      - updated_at
+      - difference_from_market_etb
+      - verdict
+      title: NearbyStorePrice
+    NearbyStoresResponse:
+      properties:
+        product_id:
+          type: string
+          format: uuid
+          title: Product Id
+        market_price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Market Price Etb
+        items:
+          items:
+            $ref: '#/components/schemas/NearbyStorePrice'
+          type: array
+          title: Items
+      type: object
+      required:
+      - product_id
+      - market_price_etb
+      - items
+      title: NearbyStoresResponse
+    ProductDetail:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        canonical_name:
+          type: string
+          title: Canonical Name
+        brand:
+          type: string
+          title: Brand
+        category:
+          type: string
+          enum:
+          - cooking_oil
+          - sugar
+          - rice
+          - flour
+          - salt
+          - pasta
+          - coffee
+          - tea
+          - milk
+          - soap
+          - detergent
+          - toothpaste
+          - shampoo
+          - bottled_water
+          title: Category
+        size_label:
+          type: string
+          title: Size Label
+        market_price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Market Price Etb
+        confidence:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Confidence
+        confidence_band:
+          type: string
+          enum:
+          - high
+          - medium
+          - low
+          title: Confidence Band
+        thumbnail_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Thumbnail Url
+        barcode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Barcode
+        price_range_etb:
+          prefixItems:
+          - type: number
+          - type: number
+          type: array
+          maxItems: 2
+          minItems: 2
+          title: Price Range Etb
+        evidence_count:
+          type: integer
+          minimum: 0.0
+          title: Evidence Count
+        store_count:
+          type: integer
+          minimum: 0.0
+          title: Store Count
+        spread_pct:
+          type: number
+          minimum: 0.0
+          title: Spread Pct
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+        confidence_breakdown:
+          $ref: '#/components/schemas/ConfidenceBreakdown'
+        sources:
+          items:
+            $ref: '#/components/schemas/SourceSummary'
+          type: array
+          title: Sources
+        history:
+          items:
+            $ref: '#/components/schemas/HistoryPoint'
+          type: array
+          title: History
+      type: object
+      required:
+      - id
+      - canonical_name
+      - brand
+      - category
+      - size_label
+      - market_price_etb
+      - confidence
+      - confidence_band
+      - price_range_etb
+      - evidence_count
+      - store_count
+      - spread_pct
+      - updated_at
+      - confidence_breakdown
+      - sources
+      - history
+      title: ProductDetail
+    ProductIdentification:
+      properties:
+        product_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Product Id
+        canonical_name:
+          type: string
+          title: Canonical Name
+        brand:
+          type: string
+          title: Brand
+        category:
+          type: string
+          enum:
+          - cooking_oil
+          - sugar
+          - rice
+          - flour
+          - salt
+          - pasta
+          - coffee
+          - tea
+          - milk
+          - soap
+          - detergent
+          - toothpaste
+          - shampoo
+          - bottled_water
+          title: Category
+        size_value:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Size Value
+        size_unit:
+          type: string
+          enum:
+          - ml
+          - l
+          - g
+          - kg
+          - piece
+          title: Size Unit
+        confidence:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Confidence
+        match_method:
+          type: string
+          enum:
+          - alias_exact
+          - trigram
+          - gemini
+          - gemini_vision
+          - new_product
+          title: Match Method
+      type: object
+      required:
+      - canonical_name
+      - brand
+      - category
+      - size_value
+      - size_unit
+      - confidence
+      - match_method
+      title: ProductIdentification
+    ProductListResponse:
+      properties:
+        total:
+          type: integer
+          minimum: 0.0
+          title: Total
+        limit:
+          type: integer
+          minimum: 1.0
+          title: Limit
+        offset:
+          type: integer
+          minimum: 0.0
+          title: Offset
+        items:
+          items:
+            $ref: '#/components/schemas/ProductSummary'
+          type: array
+          title: Items
+      type: object
+      required:
+      - total
+      - limit
+      - offset
+      - items
+      title: ProductListResponse
+    ProductSummary:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        canonical_name:
+          type: string
+          title: Canonical Name
+        brand:
+          type: string
+          title: Brand
+        category:
+          type: string
+          enum:
+          - cooking_oil
+          - sugar
+          - rice
+          - flour
+          - salt
+          - pasta
+          - coffee
+          - tea
+          - milk
+          - soap
+          - detergent
+          - toothpaste
+          - shampoo
+          - bottled_water
+          title: Category
+        size_label:
+          type: string
+          title: Size Label
+        market_price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Market Price Etb
+        confidence:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Confidence
+        confidence_band:
+          type: string
+          enum:
+          - high
+          - medium
+          - low
+          title: Confidence Band
+        thumbnail_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Thumbnail Url
+      type: object
+      required:
+      - id
+      - canonical_name
+      - brand
+      - category
+      - size_label
+      - market_price_etb
+      - confidence
+      - confidence_band
+      title: ProductSummary
+    ProductTrend:
+      properties:
+        product_id:
+          type: string
+          format: uuid
+          title: Product Id
+        product_name:
+          type: string
+          title: Product Name
+        direction:
+          type: string
+          enum:
+          - up
+          - down
+          - stable
+          title: Direction
+        change_pct:
+          type: number
+          title: Change Pct
+        points:
+          items:
+            $ref: '#/components/schemas/TrendPoint'
+          type: array
+          title: Points
+      type: object
+      required:
+      - product_id
+      - product_name
+      - direction
+      - change_pct
+      - points
+      title: ProductTrend
+    PulseMetrics:
+      properties:
+        verified_prices_today:
+          type: integer
+          minimum: 0.0
+          title: Verified Prices Today
+        products_covered:
+          type: integer
+          minimum: 0.0
+          title: Products Covered
+        stores_reporting:
+          type: integer
+          minimum: 0.0
+          title: Stores Reporting
+        new_receipts_today:
+          type: integer
+          minimum: 0.0
+          title: New Receipts Today
+        average_confidence:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Average Confidence
+      type: object
+      required:
+      - verified_prices_today
+      - products_covered
+      - stores_reporting
+      - new_receipts_today
+      - average_confidence
+      title: PulseMetrics
+    PulseMover:
+      properties:
+        product_id:
+          type: string
+          format: uuid
+          title: Product Id
+        product_name:
+          type: string
+          title: Product Name
+        kind:
+          type: string
+          enum:
+          - fastest_rising
+          - largest_drop
+          - most_stable
+          - most_verified
+          title: Kind
+        value:
+          type: number
+          title: Value
+        display_value:
+          type: string
+          title: Display Value
+      type: object
+      required:
+      - product_id
+      - product_name
+      - kind
+      - value
+      - display_value
+      title: PulseMover
+    PulseResponse:
+      properties:
+        metrics:
+          $ref: '#/components/schemas/PulseMetrics'
+        movers:
+          items:
+            $ref: '#/components/schemas/PulseMover'
+          type: array
+          title: Movers
+        cheapest_district:
+          type: string
+          title: Cheapest District
+        most_active_store:
+          type: string
+          title: Most Active Store
+      type: object
+      required:
+      - metrics
+      - movers
+      - cheapest_district
+      - most_active_store
+      title: PulseResponse
+    ReceiptExtraction:
+      properties:
+        store_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Store Name
+        observed_on:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Observed On
+        total_etb:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Total Etb
+        ocr_confidence:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Ocr Confidence
+        items:
+          items:
+            $ref: '#/components/schemas/ExtractedLineItem'
+          type: array
+          title: Items
+      type: object
+      required:
+      - ocr_confidence
+      - items
+      title: ReceiptExtraction
+    ReceiptUploadResponse:
+      properties:
+        extraction:
+          $ref: '#/components/schemas/ReceiptExtraction'
+        decisions:
+          items:
+            $ref: '#/components/schemas/EvidenceDecision'
+          type: array
+          title: Decisions
+      type: object
+      required:
+      - extraction
+      - decisions
+      title: ReceiptUploadResponse
+    ShelfExtraction:
+      properties:
+        raw_product_text:
+          type: string
+          title: Raw Product Text
+        price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Price Etb
+        matched_product_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Matched Product Id
+        matched_product_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Matched Product Name
+        ocr_confidence:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Ocr Confidence
+        match_confidence:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Match Confidence
+      type: object
+      required:
+      - raw_product_text
+      - price_etb
+      - ocr_confidence
+      - match_confidence
+      title: ShelfExtraction
+    ShelfUploadResponse:
+      properties:
+        extraction:
+          $ref: '#/components/schemas/ShelfExtraction'
+        decision:
+          $ref: '#/components/schemas/EvidenceDecision'
+      type: object
+      required:
+      - extraction
+      - decision
+      title: ShelfUploadResponse
+    SourceSummary:
+      properties:
+        source_type:
+          type: string
+          enum:
+          - partner
+          - receipt
+          - scrape
+          - store_visit
+          - shelf_photo
+          - community
+          title: Source Type
+        label:
+          type: string
+          title: Label
+        count:
+          type: integer
+          minimum: 0.0
+          title: Count
+        newest_observed_at:
+          type: string
+          format: date-time
+          title: Newest Observed At
+      type: object
+      required:
+      - source_type
+      - label
+      - count
+      - newest_observed_at
+      title: SourceSummary
+    StoreDetail:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        name:
+          type: string
+          title: Name
+        district:
+          type: string
+          title: District
+        kind:
+          type: string
+          enum:
+          - supermarket
+          - shop
+          - online
+          title: Kind
+        latitude:
+          type: number
+          title: Latitude
+        longitude:
+          type: number
+          title: Longitude
+        product_count:
+          type: integer
+          minimum: 0.0
+          title: Product Count
+        average_price_index:
+          type: number
+          title: Average Price Index
+          description: 100 is market average; below 100 is cheaper.
+        last_reported_at:
+          type: string
+          format: date-time
+          title: Last Reported At
+      type: object
+      required:
+      - id
+      - name
+      - district
+      - kind
+      - latitude
+      - longitude
+      - product_count
+      - average_price_index
+      - last_reported_at
+      title: StoreDetail
+    TrendPoint:
+      properties:
+        day:
+          type: string
+          format: date
+          title: Day
+        price_etb:
+          type: number
+          title: Price Etb
+      type: object
+      required:
+      - day
+      - price_etb
+      title: TrendPoint
+    TrendsResponse:
+      properties:
+        period_days:
+          type: integer
+          title: Period Days
+        items:
+          items:
+            $ref: '#/components/schemas/ProductTrend'
+          type: array
+          title: Items
+      type: object
+      required:
+      - period_days
+      - items
+      title: TrendsResponse
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

@@ -1,0 +1,35 @@
+{
+  "period_days": 7,
+  "items": [
+    {
+      "product_id": "11111111-1111-4111-8111-111111111111",
+      "product_name": "Hayat Cooking Oil 1L",
+      "direction": "up",
+      "change_pct": 5.2,
+      "points": [
+        {"day": "$today-6d", "price_etb": 323},
+        {"day": "$today-5d", "price_etb": 326},
+        {"day": "$today-4d", "price_etb": 329},
+        {"day": "$today-3d", "price_etb": 332},
+        {"day": "$today-2d", "price_etb": 335},
+        {"day": "$today-1d", "price_etb": 338},
+        {"day": "$today", "price_etb": 340}
+      ]
+    },
+    {
+      "product_id": "22222222-2222-4222-8222-222222222222",
+      "product_name": "Shega White Sugar 1kg",
+      "direction": "down",
+      "change_pct": -3.1,
+      "points": [
+        {"day": "$today-6d", "price_etb": 212},
+        {"day": "$today-5d", "price_etb": 211},
+        {"day": "$today-4d", "price_etb": 209},
+        {"day": "$today-3d", "price_etb": 208},
+        {"day": "$today-2d", "price_etb": 207},
+        {"day": "$today-1d", "price_etb": 206},
+        {"day": "$today", "price_etb": 205}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "decision": {
+    "id": "99999999-9999-4999-8999-999999999999",
+    "product_id": "11111111-1111-4111-8111-111111111111",
+    "product_name": "Hayat Cooking Oil 1L",
+    "price_etb": 120,
+    "source_type": "community",
+    "status": "pending",
+    "reason": "Price is 64.7% below the 340 ETB market estimate and needs verification."
+  }
+}

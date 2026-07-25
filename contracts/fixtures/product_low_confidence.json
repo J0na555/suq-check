@@ -1,0 +1,60 @@
+{
+  "id": "33333333-3333-4333-8333-333333333333",
+  "canonical_name": "Lifebuoy Soap 175g",
+  "brand": "Lifebuoy",
+  "category": "soap",
+  "size_label": "175 g",
+  "market_price_etb": 82,
+  "confidence": 58,
+  "confidence_band": "low",
+  "thumbnail_url": null,
+  "barcode": null,
+  "price_range_etb": [79, 85],
+  "evidence_count": 1,
+  "store_count": 1,
+  "spread_pct": 0,
+  "updated_at": "$now-4d",
+  "confidence_breakdown": {
+    "score": 58,
+    "band": "low",
+    "factors": [
+      {
+        "name": "volume",
+        "score": 0.28,
+        "weight": 0.3,
+        "detail": "Only 1 accepted report"
+      },
+      {
+        "name": "agreement",
+        "score": 1,
+        "weight": 0.3,
+        "detail": "More reports are needed to measure agreement"
+      },
+      {
+        "name": "freshness",
+        "score": 0.67,
+        "weight": 0.25,
+        "detail": "Newest report was 4 days ago"
+      },
+      {
+        "name": "diversity",
+        "score": 0.33,
+        "weight": 0.15,
+        "detail": "Verified at only 1 store"
+      }
+    ],
+    "capped": false,
+    "cap_reason": null
+  },
+  "sources": [
+    {
+      "source_type": "community",
+      "label": "Community reports",
+      "count": 1,
+      "newest_observed_at": "$now-4d"
+    }
+  ],
+  "history": [
+    {"day": "$today-4d", "price_etb": 82, "evidence_count": 1}
+  ]
+}

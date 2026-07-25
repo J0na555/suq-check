@@ -1,0 +1,11 @@
+{
+  "id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "name": "Selam Mart",
+  "district": "Piassa",
+  "kind": "supermarket",
+  "latitude": 9.0366,
+  "longitude": 38.7523,
+  "product_count": 47,
+  "average_price_index": 94.2,
+  "last_reported_at": "$now-37m"
+}

@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+backend/.venv/
+
+# JavaScript
+node_modules/
+.expo/
+dist/
+
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# IDE and OS
+.DS_Store
+

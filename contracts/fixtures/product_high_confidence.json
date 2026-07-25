@@ -1,0 +1,78 @@
+{
+  "id": "11111111-1111-4111-8111-111111111111",
+  "canonical_name": "Hayat Cooking Oil 1L",
+  "brand": "Hayat",
+  "category": "cooking_oil",
+  "size_label": "1 L",
+  "market_price_etb": 340,
+  "confidence": 98,
+  "confidence_band": "high",
+  "thumbnail_url": null,
+  "barcode": "8690632030018",
+  "price_range_etb": [330, 380],
+  "evidence_count": 12,
+  "store_count": 4,
+  "spread_pct": 0.009,
+  "updated_at": "$now-37m",
+  "confidence_breakdown": {
+    "score": 98,
+    "band": "high",
+    "factors": [
+      {
+        "name": "volume",
+        "score": 1,
+        "weight": 0.3,
+        "detail": "12 accepted reports"
+      },
+      {
+        "name": "agreement",
+        "score": 0.99,
+        "weight": 0.3,
+        "detail": "Prices agree within 0.9%"
+      },
+      {
+        "name": "freshness",
+        "score": 0.997,
+        "weight": 0.25,
+        "detail": "Newest report was 37 minutes ago"
+      },
+      {
+        "name": "diversity",
+        "score": 1,
+        "weight": 0.15,
+        "detail": "Verified across 4 stores"
+      }
+    ],
+    "capped": false,
+    "cap_reason": null
+  },
+  "sources": [
+    {
+      "source_type": "receipt",
+      "label": "Verified receipts",
+      "count": 8,
+      "newest_observed_at": "$now-37m"
+    },
+    {
+      "source_type": "scrape",
+      "label": "Online retailers",
+      "count": 3,
+      "newest_observed_at": "$now-3h"
+    },
+    {
+      "source_type": "store_visit",
+      "label": "Store visits",
+      "count": 1,
+      "newest_observed_at": "$now-1d"
+    }
+  ],
+  "history": [
+    {"day": "$today-6d", "price_etb": 323, "evidence_count": 7},
+    {"day": "$today-5d", "price_etb": 326, "evidence_count": 8},
+    {"day": "$today-4d", "price_etb": 329, "evidence_count": 8},
+    {"day": "$today-3d", "price_etb": 332, "evidence_count": 10},
+    {"day": "$today-2d", "price_etb": 335, "evidence_count": 11},
+    {"day": "$today-1d", "price_etb": 338, "evidence_count": 11},
+    {"day": "$today", "price_etb": 340, "evidence_count": 12}
+  ]
+}
