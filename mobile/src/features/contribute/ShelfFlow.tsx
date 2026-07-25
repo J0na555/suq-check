@@ -23,7 +23,7 @@ export function ShelfFlow() {
   return (
     <>
       <Card>
-        <SectionHeader title="Photograph a shelf tag" hint="Get the product name and price in frame" />
+        <SectionHeader title="1. Capture shelf tag" hint="Get the product name and price in frame" />
         <PhotoPicker
           photo={photo}
           onPhoto={(picked) => {
@@ -55,7 +55,7 @@ export function ShelfFlow() {
       {result ? (
         <>
           <Card>
-            <SectionHeader title="What we read" />
+            <SectionHeader title="2. Extracted data" />
             <KeyValue label="Tag text" value={result.extraction.raw_product_text} />
             <KeyValue label="Price" value={`${etb(result.extraction.price_etb)} ETB`} />
             <KeyValue
@@ -73,7 +73,7 @@ export function ShelfFlow() {
           </Card>
 
           <Card>
-            <SectionHeader title="What the gate decided" />
+            <SectionHeader title="3. Verification result" />
             <View style={styles.decision}>
               <DecisionCard decision={result.decision} />
             </View>
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   },
   error: {
     ...typography.caption,
-    color: colors.low,
+    color: colors.danger,
     marginTop: spacing.md,
   },
   note: {

@@ -2,7 +2,25 @@
 
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, spacing, type as typography } from '../theme/tokens';
+import { colors, radius, spacing, type as typography } from '../theme/tokens';
+
+export function PageIntro({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+}) {
+  return (
+    <View style={styles.pageIntro}>
+      <Text style={styles.eyebrow}>{eyebrow}</Text>
+      <Text style={styles.pageTitle}>{title}</Text>
+      <Text style={styles.pageDescription}>{description}</Text>
+    </View>
+  );
+}
 
 export function SectionHeader({
   title,
@@ -27,6 +45,7 @@ export function SectionHeader({
 export function StatTile({ value, label }: { value: string; label: string }) {
   return (
     <View style={styles.tile}>
+      <View style={styles.tileAccent} />
       <Text style={styles.tileValue} numberOfLines={1} adjustsFontSizeToFit>
         {value}
       </Text>
@@ -45,6 +64,25 @@ export function KeyValue({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
+  pageIntro: {
+    gap: spacing.xs,
+    paddingVertical: spacing.xs,
+  },
+  eyebrow: {
+    ...typography.eyebrow,
+    color: colors.brand,
+  },
+  pageTitle: {
+    ...typography.title,
+    color: colors.text,
+    fontSize: 28,
+  },
+  pageDescription: {
+    ...typography.caption,
+    color: colors.textMuted,
+    lineHeight: 18,
+    maxWidth: 520,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -66,12 +104,27 @@ const styles = StyleSheet.create({
   },
   tile: {
     flex: 1,
-    minWidth: '30%',
-    gap: 2,
+    minWidth: '46%',
+    gap: 3,
+    backgroundColor: colors.surfaceTint,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    padding: spacing.md,
+    overflow: 'hidden',
+  },
+  tileAccent: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: 3,
+    backgroundColor: colors.brand,
   },
   tileValue: {
     ...typography.title,
     color: colors.text,
+    fontSize: 24,
   },
   tileLabel: {
     ...typography.caption,

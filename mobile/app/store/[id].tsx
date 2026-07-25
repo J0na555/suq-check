@@ -1,12 +1,12 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useStore } from '../../src/api/queries';
 import { Card } from '../../src/components/Card';
 import { KeyValue, SectionHeader } from '../../src/components/layout';
 import { ErrorState, LoadingState } from '../../src/components/ScreenState';
 import { timeAgo } from '../../src/lib/format';
-import { colors, spacing, type as typography } from '../../src/theme/tokens';
+import { colors, radius, spacing, type as typography } from '../../src/theme/tokens';
 
 const KIND_LABELS: Record<string, string> = {
   supermarket: 'Supermarket',
@@ -36,9 +36,13 @@ export default function StoreScreen() {
     <>
       <Stack.Screen options={{ title: detail.name }} />
       <ScrollView contentContainerStyle={styles.content}>
-        <Card>
+        <Card style={styles.card}>
           <SectionHeader title={detail.name} hint={`${detail.district} - ${KIND_LABELS[detail.kind] ?? detail.kind}`} />
-          <KeyValue label="Price index" value={index.toFixed(1)} />
+          <View style={styles.indexHero}>
+            <Text style={styles.indexLabel}>Price index</Text>
+            <Text style={styles.indexValue}>{index.toFixed(1)}</Text>
+            <Text style={styles.indexCaption}>100 is the market average</Text>
+          </View>
           <KeyValue label="Products priced here" value={String(detail.product_count)} />
           <KeyValue label="Last report" value={timeAgo(detail.last_reported_at)} />
           <Text style={styles.verdict}>{verdict}</Text>
@@ -56,6 +60,29 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
     gap: spacing.lg,
+  },
+  card: {
+    borderTopWidth: 4,
+    borderTopColor: colors.brand,
+  },
+  indexHero: {
+    backgroundColor: colors.brandSoft,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    marginVertical: spacing.md,
+  },
+  indexLabel: {
+    ...typography.eyebrow,
+    color: colors.brand,
+  },
+  indexValue: {
+    ...typography.display,
+    color: colors.brandDark,
+    marginTop: spacing.xs,
+  },
+  indexCaption: {
+    ...typography.caption,
+    color: colors.brandDark,
   },
   verdict: {
     ...typography.bodyStrong,

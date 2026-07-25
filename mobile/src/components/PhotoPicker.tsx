@@ -1,5 +1,6 @@
 /** Take or choose a photo, preview it, and hand it to whoever needs to upload. */
 
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 
@@ -43,6 +44,9 @@ export function PhotoPicker({
         <Image source={{ uri: photo.uri }} style={styles.preview} resizeMode="cover" />
       ) : (
         <View style={styles.placeholder}>
+          <View style={styles.cameraIcon}>
+            <Ionicons name="camera-outline" size={26} color={colors.brand} />
+          </View>
           <Text style={styles.placeholderText}>
             Fill the frame with the receipt or price tag, and keep it flat.
           </Text>
@@ -81,6 +85,8 @@ const styles = StyleSheet.create({
     height: 220,
     borderRadius: radius.md,
     backgroundColor: colors.surfaceMuted,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
   },
   placeholder: {
     height: 220,
@@ -98,6 +104,15 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     textAlign: 'center',
   },
+  cameraIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.md,
+    backgroundColor: colors.brandSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
   actions: {
     flexDirection: 'row',
     gap: spacing.md,
@@ -107,6 +122,6 @@ const styles = StyleSheet.create({
   },
   problem: {
     ...typography.caption,
-    color: colors.low,
+    color: colors.danger,
   },
 });

@@ -19,7 +19,7 @@ import { SourceRow } from '../../../src/components/rows';
 import { ErrorState, LoadingState } from '../../../src/components/ScreenState';
 import { Sparkline } from '../../../src/components/Sparkline';
 import { categoryLabel, dayLabel, etb, signedPercent, timeAgo } from '../../../src/lib/format';
-import { colors, spacing, type as typography } from '../../../src/theme/tokens';
+import { colors, radius, spacing, type as typography } from '../../../src/theme/tokens';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -44,7 +44,8 @@ export default function ProductDetailScreen() {
     <>
       <Stack.Screen options={{ title: detail.brand }} />
       <ScrollView contentContainerStyle={styles.content}>
-        <Card>
+        <Card style={styles.hero}>
+          <Text style={styles.eyebrow}>Verified market price</Text>
           <Text style={styles.name}>{detail.canonical_name}</Text>
           <Text style={styles.meta}>
             {categoryLabel(detail.category)} - {detail.size_label}
@@ -134,6 +135,15 @@ const styles = StyleSheet.create({
     ...typography.title,
     color: colors.text,
   },
+  eyebrow: {
+    ...typography.eyebrow,
+    color: colors.brand,
+    marginBottom: spacing.xs,
+  },
+  hero: {
+    borderTopWidth: 4,
+    borderTopColor: colors.brand,
+  },
   meta: {
     ...typography.caption,
     color: colors.textMuted,
@@ -182,10 +192,13 @@ const styles = StyleSheet.create({
   },
   link: {
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.brand,
+    borderRadius: radius.md,
   },
   linkLabel: {
     ...typography.bodyStrong,
-    color: colors.brand,
+    color: colors.inverse,
     textAlign: 'center',
   },
 });

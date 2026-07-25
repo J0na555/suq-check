@@ -50,7 +50,7 @@ export function PriceListFlow() {
       <>
         <Card>
           <SectionHeader
-            title="What we read"
+            title="3. Extracted data"
             hint={`${recorded} of ${read} lines matched the catalog`}
           />
           <KeyValue label="Store" value={result.extraction.store_name} />
@@ -69,7 +69,7 @@ export function PriceListFlow() {
 
         <Card>
           <SectionHeader
-            title="What the gate decided"
+            title="4. Verification result"
             hint="Every line is checked on its own"
           />
           {recorded === 0 ? (
@@ -100,7 +100,7 @@ export function PriceListFlow() {
         storeId={store?.id ?? null}
         onStore={setStore}
         labels={{
-          productTitle: 'Which shop is this list in?',
+          productTitle: '1. Find the shop',
           productHint: 'Search any item on the board to find the shop',
           storeTitle: 'Pick the shop',
           storeHint: 'Shops already pricing that item',
@@ -112,7 +112,7 @@ export function PriceListFlow() {
       {store ? (
         <Card>
           <SectionHeader
-            title="Photograph the price list"
+            title="2. Capture price list"
             hint="Get the whole board in frame, straight on"
           />
           <PhotoPicker
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   error: {
     ...typography.caption,
-    color: colors.low,
+    color: colors.danger,
     marginTop: spacing.md,
   },
   decisions: {

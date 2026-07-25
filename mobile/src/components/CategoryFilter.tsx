@@ -77,12 +77,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: radius.pill,
+    borderRadius: radius.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
   chipActive: {
-    backgroundColor: colors.brandSoft,
+    backgroundColor: colors.brand,
     borderColor: colors.brand,
   },
   chipLabel: {
@@ -90,6 +90,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   chipLabelActive: {
-    color: colors.brandDark,
+    color: colors.inverse,
+    fontWeight: '600',
   },
 });

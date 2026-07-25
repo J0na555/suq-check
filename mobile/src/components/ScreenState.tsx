@@ -5,6 +5,7 @@
  * slow request rather than leaving a spinner to look broken.
  */
 
+import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ApiError, NetworkError } from '../api/client';
@@ -13,7 +14,9 @@ import { colors, radius, spacing, type as typography } from '../theme/tokens';
 export function LoadingState({ label = 'Loading prices' }: { label?: string }) {
   return (
     <View style={styles.container}>
-      <ActivityIndicator color={colors.brand} />
+      <View style={styles.iconBox}>
+        <ActivityIndicator color={colors.brand} />
+      </View>
       <Text style={styles.title}>{label}</Text>
       <Text style={styles.body}>The first request after a quiet spell can take a moment.</Text>
     </View>
@@ -23,6 +26,9 @@ export function LoadingState({ label = 'Loading prices' }: { label?: string }) {
 export function EmptyState({ title, body }: { title: string; body?: string }) {
   return (
     <View style={styles.container}>
+      <View style={styles.iconBox}>
+        <Ionicons name="file-tray-outline" color={colors.brand} size={22} />
+      </View>
       <Text style={styles.title}>{title}</Text>
       {body ? <Text style={styles.body}>{body}</Text> : null}
     </View>
@@ -45,7 +51,10 @@ export function ErrorState({
   retryLabel?: string;
 }) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, styles.errorContainer]}>
+      <View style={[styles.iconBox, styles.errorIcon]}>
+        <Ionicons name="alert-circle-outline" color={colors.medium} size={22} />
+      </View>
       <Text style={styles.title}>Not loaded</Text>
       <Text style={styles.body}>{messageFor(error)}</Text>
       {onRetry ? (
@@ -64,8 +73,29 @@ const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     gap: spacing.sm,
+    margin: spacing.lg,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.xxl,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+  },
+  errorContainer: {
+    backgroundColor: colors.mediumSoft,
+    borderColor: colors.medium,
+  },
+  iconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.brandSoft,
+    marginBottom: spacing.xs,
+  },
+  errorIcon: {
+    backgroundColor: colors.mediumSoft,
   },
   title: {
     ...typography.bodyStrong,
@@ -79,7 +109,7 @@ const styles = StyleSheet.create({
   button: {
     marginTop: spacing.sm,
     backgroundColor: colors.brand,
-    borderRadius: radius.pill,
+    borderRadius: radius.md,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
   },

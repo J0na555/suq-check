@@ -44,6 +44,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: spacing.lg,
     gap: spacing.xs,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
   header: {
     flexDirection: 'row',
@@ -67,6 +72,8 @@ const styles = StyleSheet.create({
   },
   next: {
     ...typography.caption,
-    color: colors.textMuted,
+    color: colors.text,
+    fontWeight: '600',
+    marginTop: spacing.xs,
   },
 });

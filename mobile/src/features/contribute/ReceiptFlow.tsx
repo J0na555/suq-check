@@ -31,7 +31,7 @@ export function ReceiptFlow() {
     <>
       <Card>
         <SectionHeader
-          title="Photograph a receipt"
+          title="1. Capture receipt"
           hint="English or Amharic, printed or handwritten"
         />
         <PhotoPicker
@@ -58,7 +58,7 @@ export function ReceiptFlow() {
       {result ? (
         <>
           <Card>
-            <SectionHeader title="What we read" hint="Check this against the paper in your hand" />
+            <SectionHeader title="2. Extracted data" hint="Check this against the paper in your hand" />
             {result.extraction.store_name ? (
               <KeyValue label="Store" value={result.extraction.store_name} />
             ) : null}
@@ -82,7 +82,7 @@ export function ReceiptFlow() {
 
           <Card>
             <SectionHeader
-              title="What the gate decided"
+              title="3. Verification result"
               hint="Each price is checked against the current market estimate"
             />
             {result.decisions.length === 0 ? (
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   },
   error: {
     ...typography.caption,
-    color: colors.low,
+    color: colors.danger,
     marginTop: spacing.md,
   },
   decisions: {

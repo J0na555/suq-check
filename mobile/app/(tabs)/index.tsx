@@ -6,13 +6,14 @@
  * SuqCheck from a price list someone typed in.
  */
 
+import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { PulseMover } from '../../src/api/endpoints';
 import { usePulse, useRecentEvidence } from '../../src/api/queries';
 import { Card } from '../../src/components/Card';
-import { KeyValue, SectionHeader, StatTile } from '../../src/components/layout';
+import { KeyValue, PageIntro, SectionHeader, StatTile } from '../../src/components/layout';
 import { EvidenceRow } from '../../src/components/rows';
 import { ErrorState, LoadingState } from '../../src/components/ScreenState';
 import { signedPercent } from '../../src/lib/format';
@@ -50,6 +51,11 @@ export default function PulseScreen() {
         />
       }
     >
+      <PageIntro
+        eyebrow="Business intelligence"
+        title="Market overview"
+        description="Live coverage, price movement, and evidence quality across Addis Ababa."
+      />
       <Card>
         <SectionHeader title="Addis Ababa today" hint="Built from verified evidence only" />
         <View style={styles.tiles}>
@@ -66,6 +72,18 @@ export default function PulseScreen() {
           {movers.map((mover) => (
             <Link key={`${mover.kind}-${mover.product_id}`} href={`/product/${mover.product_id}`}>
               <View style={styles.mover}>
+                <View
+                  style={[
+                    styles.moverIcon,
+                    mover.kind === 'fastest_rising' && styles.moverIconRising,
+                  ]}
+                >
+                  <Ionicons
+                    name={mover.kind === 'largest_drop' ? 'trending-down' : 'trending-up'}
+                    size={18}
+                    color={mover.kind === 'fastest_rising' ? colors.rising : colors.brand}
+                  />
+                </View>
                 <View style={styles.moverText}>
                   <Text style={styles.moverName} numberOfLines={1}>
                     {mover.product_name}
@@ -91,9 +109,11 @@ export default function PulseScreen() {
 
       <Card>
         <SectionHeader title="Where to shop" />
-        <KeyValue label="Cheapest district" value={cheapest_district} />
-        <KeyValue label="Most active store" value={most_active_store} />
-        <KeyValue label="New receipts today" value={String(metrics.new_receipts_today)} />
+        <View style={styles.signalPanel}>
+          <KeyValue label="Cheapest district" value={cheapest_district} />
+          <KeyValue label="Most active store" value={most_active_store} />
+          <KeyValue label="New receipts today" value={String(metrics.new_receipts_today)} />
+        </View>
       </Card>
 
       <Card>
@@ -138,6 +158,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
   },
+  moverIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.brandSoft,
+  },
+  moverIconRising: {
+    backgroundColor: colors.risingSoft,
+  },
   moverText: {
     flex: 1,
     gap: 2,
@@ -161,6 +192,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceMuted,
     borderRadius: radius.sm,
     padding: spacing.md,
+  },
+  signalPanel: {
+    backgroundColor: colors.surfaceTint,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
   },
   footnote: {
     ...typography.caption,

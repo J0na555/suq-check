@@ -88,6 +88,11 @@ const styles = StyleSheet.create({
   body: {
     gap: spacing.lg,
     marginTop: spacing.lg,
+    backgroundColor: colors.surfaceTint,
+    borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    padding: spacing.md,
   },
   factor: {
     gap: spacing.xs,

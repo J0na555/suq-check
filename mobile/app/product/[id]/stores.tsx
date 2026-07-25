@@ -70,7 +70,7 @@ export default function ProductStoresScreen() {
     <>
       <Stack.Screen options={{ title: 'Stores and prices' }} />
       <ScrollView contentContainerStyle={styles.content}>
-        <Card>
+        <Card style={styles.summaryCard}>
           <SectionHeader title="Market comparison" />
           <KeyValue label="Market price" value={`${etb(market_price_etb)} ETB`} />
           {cheapest !== null ? (
@@ -143,6 +143,10 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
     paddingBottom: spacing.xxl,
   },
+  summaryCard: {
+    borderTopWidth: 4,
+    borderTopColor: colors.brand,
+  },
   radiusStrip: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -152,12 +156,12 @@ const styles = StyleSheet.create({
   radiusChip: {
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
-    borderRadius: radius.pill,
+    borderRadius: radius.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
   radiusChipActive: {
-    backgroundColor: colors.brandSoft,
+    backgroundColor: colors.brand,
     borderColor: colors.brand,
   },
   radiusLabel: {
@@ -165,7 +169,8 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   radiusLabelActive: {
-    color: colors.brandDark,
+    color: colors.inverse,
+    fontWeight: '600',
   },
   locationPrompt: {
     marginBottom: spacing.md,

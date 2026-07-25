@@ -1,9 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import type { Category } from '../../src/api/endpoints';
 import { useProductSearch } from '../../src/api/queries';
 import { CategoryFilter } from '../../src/components/CategoryFilter';
+import { PageIntro } from '../../src/components/layout';
 import { EmptyState, ErrorState, LoadingState } from '../../src/components/ScreenState';
 import { ProductRow } from '../../src/components/rows';
 import { useDebounced } from '../../src/lib/useDebounced';
@@ -23,7 +25,15 @@ export default function SearchScreen() {
 
   return (
     <View style={styles.screen}>
+      <View style={styles.intro}>
+        <PageIntro
+          eyebrow="Price discovery"
+          title="Find a product"
+          description="Search current market prices and compare confidence at a glance."
+        />
+      </View>
       <View style={styles.searchBar}>
+        <Ionicons name="search" color={colors.textFaint} size={19} />
         <TextInput
           value={term}
           onChangeText={setTerm}
@@ -32,6 +42,7 @@ export default function SearchScreen() {
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="search"
+          accessibilityLabel="Search products and brands"
           style={styles.input}
         />
       </View>
@@ -67,17 +78,32 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   searchBar: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-  },
-  input: {
-    ...typography.body,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginHorizontal: spacing.lg,
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderWidth: StyleSheet.hairlineWidth,
     borderRadius: radius.md,
-    color: colors.text,
     paddingHorizontal: spacing.lg,
+    ...{
+      shadowColor: colors.text,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 6,
+      elevation: 2,
+    },
+  },
+  intro: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+  },
+  input: {
+    ...typography.body,
+    flex: 1,
+    color: colors.text,
     paddingVertical: spacing.md,
   },
   list: {

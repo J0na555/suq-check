@@ -57,6 +57,8 @@ export function StorePicker({
         {product ? (
           <Pressable
             style={styles.selected}
+            accessibilityRole="button"
+            accessibilityHint="Clears this product selection"
             onPress={() => {
               onProduct(null);
               onStore(null);
@@ -76,11 +78,13 @@ export function StorePicker({
               placeholderTextColor={colors.textFaint}
               autoCapitalize="none"
               autoCorrect={false}
+              accessibilityLabel="Search the product catalog"
               style={styles.input}
             />
             {products.data?.items.slice(0, 6).map((candidate) => (
               <Pressable
                 key={candidate.id}
+                accessibilityRole="button"
                 style={styles.option}
                 onPress={() => {
                   onProduct(candidate);
@@ -113,6 +117,8 @@ export function StorePicker({
             stores.data.items.map((store) => (
               <Pressable
                 key={store.id}
+                accessibilityRole="button"
+                accessibilityState={{ selected: storeId === store.id }}
                 style={[styles.option, storeId === store.id && styles.optionActive]}
                 onPress={() => onStore(store)}
               >
@@ -132,8 +138,10 @@ export function StorePicker({
 const styles = StyleSheet.create({
   input: {
     ...typography.body,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: colors.surface,
     borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderStrong,
     color: colors.text,
     marginBottom: spacing.md,
     paddingHorizontal: spacing.lg,
@@ -149,6 +157,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brandSoft,
     borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
+    borderTopColor: colors.brand,
   },
   optionLabel: {
     ...typography.bodyStrong,
@@ -159,18 +168,18 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   selected: {
-    backgroundColor: colors.brandSoft,
+    backgroundColor: colors.brand,
     borderRadius: radius.md,
     padding: spacing.md,
     gap: 2,
   },
   selectedName: {
     ...typography.bodyStrong,
-    color: colors.brandDark,
+    color: colors.inverse,
   },
   selectedMeta: {
     ...typography.caption,
-    color: colors.brandDark,
+    color: colors.brandSoft,
   },
   note: {
     ...typography.caption,

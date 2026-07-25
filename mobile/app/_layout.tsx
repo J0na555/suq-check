@@ -20,12 +20,12 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={client}>
       <SafeAreaProvider>
-        <StatusBar style="dark" />
+        <StatusBar style="light" />
         <Stack
           screenOptions={{
-            headerStyle: { backgroundColor: colors.surface },
-            headerTitleStyle: { color: colors.text, fontSize: 17, fontWeight: '600' },
-            headerTintColor: colors.brand,
+            headerStyle: { backgroundColor: colors.chrome },
+            headerTitleStyle: { color: colors.inverse, fontSize: 17, fontWeight: '700' },
+            headerTintColor: colors.inverse,
             headerShadowVisible: false,
             contentStyle: { backgroundColor: colors.background },
           }}

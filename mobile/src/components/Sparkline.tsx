@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { View } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
+import Svg, { Circle, Line, Path } from 'react-native-svg';
 
 import { colors } from '../theme/tokens';
 
@@ -40,8 +40,19 @@ export function Sparkline({ values, width, height = 64, color = colors.brand }: 
 
   return (
     <Svg width={width} height={height}>
-      <Path d={geometry.area} fill={color} fillOpacity={0.08} />
-      <Path d={geometry.line} stroke={color} strokeWidth={2} fill="none" strokeLinejoin="round" />
+      {[0.25, 0.5, 0.75].map((ratio) => (
+        <Line
+          key={ratio}
+          x1={0}
+          x2={width}
+          y1={height * ratio}
+          y2={height * ratio}
+          stroke={colors.chartGrid}
+          strokeDasharray="4 4"
+        />
+      ))}
+      <Path d={geometry.area} fill={color} fillOpacity={0.12} />
+      <Path d={geometry.line} stroke={color} strokeWidth={2.5} fill="none" strokeLinejoin="round" />
       <Circle cx={geometry.last.x} cy={geometry.last.y} r={3.5} fill={color} />
     </Svg>
   );

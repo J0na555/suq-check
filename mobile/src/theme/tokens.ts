@@ -10,10 +10,13 @@ export const colors = {
   brand: '#0B6E4F',
   brandDark: '#08533B',
   brandSoft: '#E7F3ED',
+  chrome: '#073F33',
+  chromeSoft: '#0D5948',
 
   background: '#F6F7F9',
   surface: '#FFFFFF',
   surfaceMuted: '#F1F3F6',
+  surfaceTint: '#F8FAFC',
 
   text: '#111827',
   textMuted: '#6B7280',
@@ -22,6 +25,13 @@ export const colors = {
 
   border: '#E5E7EB',
   borderStrong: '#D1D5DB',
+  chartGrid: '#E8ECF1',
+  info: '#2676A6',
+  infoSoft: '#EAF4FA',
+  violet: '#6D5BD0',
+  violetSoft: '#F0EDFF',
+  amber: '#C47A17',
+  amberSoft: '#FFF6E8',
 
   high: '#0B6E4F',
   highSoft: '#E7F3ED',
@@ -31,7 +41,10 @@ export const colors = {
   lowSoft: '#FEE4E2',
 
   rising: '#B42318',
+  risingSoft: '#FEE4E2',
   falling: '#0B6E4F',
+  danger: '#B42318',
+  dangerSoft: '#FEE4E2',
 } as const;
 
 export const spacing = {
@@ -51,13 +64,36 @@ export const radius = {
 } as const;
 
 export const type = {
-  display: { fontSize: 34, fontWeight: '700' as const, letterSpacing: -0.5 },
-  title: { fontSize: 22, fontWeight: '700' as const },
+  display: { fontSize: 34, fontWeight: '700' as const, letterSpacing: -0.8 },
+  title: { fontSize: 22, fontWeight: '700' as const, letterSpacing: -0.35 },
   heading: { fontSize: 17, fontWeight: '600' as const },
   body: { fontSize: 15, fontWeight: '400' as const },
   bodyStrong: { fontSize: 15, fontWeight: '600' as const },
   label: { fontSize: 13, fontWeight: '500' as const },
   caption: { fontSize: 12, fontWeight: '400' as const },
+  eyebrow: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase' as const,
+  },
+} as const;
+
+export const shadow = {
+  card: {
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  raised: {
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 5,
+  },
 } as const;
 
 export type ConfidenceBand = 'high' | 'medium' | 'low';

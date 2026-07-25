@@ -5,6 +5,7 @@ import { ManualFlow } from '../../src/features/contribute/ManualFlow';
 import { PriceListFlow } from '../../src/features/contribute/PriceListFlow';
 import { ReceiptFlow } from '../../src/features/contribute/ReceiptFlow';
 import { ShelfFlow } from '../../src/features/contribute/ShelfFlow';
+import { PageIntro } from '../../src/components/layout';
 import { colors, radius, spacing, type as typography } from '../../src/theme/tokens';
 
 type Mode = 'receipt' | 'shelf' | 'price_list' | 'manual';
@@ -29,6 +30,11 @@ export default function ContributeScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <PageIntro
+        eyebrow="Evidence pipeline"
+        title="Report a price"
+        description="Choose the strongest evidence available. Every submission passes through the verification gate."
+      />
       <View style={styles.switcher}>
         {MODES.map((option) => (
           <Pressable
@@ -62,24 +68,27 @@ const styles = StyleSheet.create({
   switcher: {
     flexDirection: 'row',
     backgroundColor: colors.surfaceMuted,
-    borderRadius: radius.pill,
+    borderRadius: radius.md,
     padding: 4,
     gap: 4,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
   },
   tab: {
     flex: 1,
     alignItems: 'center',
-    borderRadius: radius.pill,
+    borderRadius: radius.sm,
     paddingVertical: spacing.sm,
   },
   tabActive: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.brand,
   },
   tabLabel: {
     ...typography.label,
     color: colors.textMuted,
   },
   tabLabelActive: {
-    color: colors.text,
+    color: colors.inverse,
+    fontWeight: '600',
   },
 });

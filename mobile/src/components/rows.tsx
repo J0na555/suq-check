@@ -1,5 +1,6 @@
 /** The repeated list rows: products, stores, evidence sources, ingestion entries. */
 
+import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -29,15 +30,16 @@ export function ProductRow({ product }: { product: ProductSummary }) {
           <Text style={styles.price}>{etb(product.market_price_etb)} ETB</Text>
           <ConfidenceBadge band={product.confidence_band} score={product.confidence} />
         </View>
+        <Ionicons name="chevron-forward" color={colors.textFaint} size={16} />
       </Pressable>
     </Link>
   );
 }
 
 const VERDICT_COPY = {
-  cheap: { label: 'Cheapest here', color: colors.high },
+  cheap: { label: 'Cheapest here', color: colors.falling },
   fair: { label: 'Around market', color: colors.textMuted },
-  high: { label: 'Above market', color: colors.low },
+  high: { label: 'Above market', color: colors.rising },
 } as const;
 
 export function StoreRow({ store }: { store: NearbyStorePrice }) {
@@ -64,6 +66,7 @@ export function StoreRow({ store }: { store: NearbyStorePrice }) {
               : `${difference > 0 ? '+' : '-'}${etb(Math.abs(difference))} ETB`}
           </Text>
         </View>
+        <Ionicons name="chevron-forward" color={colors.textFaint} size={16} />
       </Pressable>
     </Link>
   );
@@ -108,9 +111,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    paddingVertical: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
   rowPressed: {
     backgroundColor: colors.surfaceMuted,
@@ -161,8 +172,8 @@ const styles = StyleSheet.create({
   },
   reason: {
     ...typography.caption,
-    color: colors.textMuted,
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: colors.mediumSoft,
+    color: colors.medium,
     borderRadius: radius.sm,
     padding: spacing.sm,
   },

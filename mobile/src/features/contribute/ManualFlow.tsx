@@ -49,7 +49,7 @@ export function ManualFlow() {
   if (report.data) {
     return (
       <Card>
-        <SectionHeader title="What the gate decided" />
+        <SectionHeader title="4. Verification result" />
         <View style={styles.decision}>
           <DecisionCard decision={report.data.decision} />
         </View>
@@ -68,8 +68,8 @@ export function ManualFlow() {
         storeId={storeId}
         onStore={(store) => setStoreId(store?.id ?? null)}
         labels={{
-          productTitle: 'Which product?',
-          storeTitle: 'Which store?',
+          productTitle: '1. Choose product',
+          storeTitle: '2. Choose store',
           storeHint: 'Stores already pricing this product',
           emptyStores:
             'No store reports this product yet, so there is nowhere to attach a price. A shelf photo is the way in.',
@@ -78,7 +78,7 @@ export function ManualFlow() {
 
       {product && storeId ? (
         <Card>
-          <SectionHeader title="What did it cost?" />
+          <SectionHeader title="3. Enter observed price" />
           <TextInput
             value={price}
             onChangeText={setPrice}
@@ -93,6 +93,8 @@ export function ManualFlow() {
               <Pressable
                 key={choice.value}
                 onPress={() => setSourceType(choice.value)}
+                accessibilityRole="button"
+                accessibilityState={{ selected: sourceType === choice.value }}
                 style={[styles.option, sourceType === choice.value && styles.optionActive]}
               >
                 <Text style={styles.optionLabel}>{choice.label}</Text>
@@ -135,21 +137,24 @@ const styles = StyleSheet.create({
     ...typography.body,
     backgroundColor: colors.surfaceMuted,
     borderRadius: radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderStrong,
     color: colors.text,
     marginBottom: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
   },
   option: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
-    paddingVertical: spacing.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.md,
     gap: 2,
   },
   optionActive: {
     backgroundColor: colors.brandSoft,
     borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
+    borderColor: colors.brand,
   },
   optionLabel: {
     ...typography.bodyStrong,
@@ -161,13 +166,14 @@ const styles = StyleSheet.create({
   },
   sources: {
     marginBottom: spacing.md,
+    gap: spacing.sm,
   },
   submit: {
     marginTop: spacing.xs,
   },
   error: {
     ...typography.caption,
-    color: colors.low,
+    color: colors.danger,
     marginTop: spacing.md,
   },
   footnote: {

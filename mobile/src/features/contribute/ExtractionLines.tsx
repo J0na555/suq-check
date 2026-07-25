@@ -46,14 +46,17 @@ export function ExtractionLines({
 const styles = StyleSheet.create({
   lines: {
     marginTop: spacing.md,
+    gap: spacing.sm,
   },
   line: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    paddingVertical: spacing.md,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
+    padding: spacing.md,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceTint,
   },
   lineText: {
     flex: 1,

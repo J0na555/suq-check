@@ -14,11 +14,13 @@ type BadgeProps = {
   label: string;
   foreground: string;
   background: string;
+  dot?: boolean;
 };
 
-export function Badge({ label, foreground, background }: BadgeProps) {
+export function Badge({ label, foreground, background, dot = false }: BadgeProps) {
   return (
-    <View style={[styles.badge, { backgroundColor: background }]}>
+    <View style={[styles.badge, { backgroundColor: background, borderColor: foreground }]}>
+      {dot ? <View style={[styles.dot, { backgroundColor: foreground }]} /> : null}
       <Text style={[styles.label, { color: foreground }]}>{label}</Text>
     </View>
   );
@@ -43,7 +45,7 @@ export function ConfidenceBadge({
 
 export function DecisionBadge({ status }: { status: DecisionStatus }) {
   const palette = decisionPalette[status];
-  return <Badge label={palette.label} foreground={palette.fg} background={palette.bg} />;
+  return <Badge label={palette.label} foreground={palette.fg} background={palette.bg} dot />;
 }
 
 export function NeutralBadge({ label }: { label: string }) {
@@ -53,9 +55,18 @@ export function NeutralBadge({ label }: { label: string }) {
 const styles = StyleSheet.create({
   badge: {
     alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     borderRadius: radius.pill,
+    borderWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: spacing.md,
     paddingVertical: 5,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: radius.pill,
   },
   label: {
     fontSize: 12,

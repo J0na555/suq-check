@@ -13,7 +13,7 @@ import type { Photo } from '../../src/api/client';
 import { useIdentify } from '../../src/api/queries';
 import { Button } from '../../src/components/Button';
 import { Card } from '../../src/components/Card';
-import { KeyValue, SectionHeader } from '../../src/components/layout';
+import { KeyValue, PageIntro, SectionHeader } from '../../src/components/layout';
 import { PhotoPicker } from '../../src/components/PhotoPicker';
 import { messageFor } from '../../src/components/ScreenState';
 import { categoryLabel } from '../../src/lib/format';
@@ -34,9 +34,14 @@ export default function ScanScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
+      <PageIntro
+        eyebrow="Visual lookup"
+        title="Identify a product"
+        description="Photograph the pack and match it against the verified SuqCheck catalog."
+      />
       <Card>
         <SectionHeader
-          title="Identify a product"
+          title="1. Capture the label"
           hint="Photograph the front of the pack, label facing you"
         />
         <PhotoPicker
@@ -62,7 +67,11 @@ export default function ScanScreen() {
 
       {result ? (
         <Card>
-          <SectionHeader title={result.canonical_name} hint={result.brand} />
+          <SectionHeader title="2. Catalog match" hint="Product identified from the submitted photo" />
+          <View style={styles.resultHero}>
+            <Text style={styles.resultName}>{result.canonical_name}</Text>
+            <Text style={styles.resultBrand}>{result.brand}</Text>
+          </View>
           <KeyValue label="Category" value={categoryLabel(result.category)} />
           <KeyValue label="Pack size" value={`${result.size_value} ${result.size_unit}`} />
           <KeyValue
@@ -100,13 +109,16 @@ const styles = StyleSheet.create({
   },
   error: {
     ...typography.caption,
-    color: colors.low,
+    color: colors.danger,
     marginTop: spacing.md,
   },
   method: {
     ...typography.caption,
-    color: colors.textMuted,
     marginTop: spacing.sm,
+    backgroundColor: colors.infoSoft,
+    color: colors.info,
+    borderRadius: radius.sm,
+    padding: spacing.md,
   },
   link: {
     marginTop: spacing.lg,
@@ -122,5 +134,20 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     padding: spacing.md,
     marginTop: spacing.lg,
+  },
+  resultHero: {
+    paddingVertical: spacing.md,
+    marginBottom: spacing.xs,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
+  resultName: {
+    ...typography.heading,
+    color: colors.text,
+  },
+  resultBrand: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginTop: 2,
   },
 });
