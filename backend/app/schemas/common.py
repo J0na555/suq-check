@@ -80,3 +80,9 @@ class HealthResponse(BaseModel):
     fixtures: bool
     checked_at: datetime
 
+
+class ErrorResponse(BaseModel):
+    """Every error this API returns, including 429, has this body."""
+
+    detail: str
+

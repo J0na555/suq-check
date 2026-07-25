@@ -152,3 +152,44 @@ def test_openapi_exposes_exactly_eleven_product_endpoints_plus_health() -> None:
     assert operation_count == 12
     assert "/healthz" in paths
 
+
+def documented_errors() -> set[tuple[str, str]]:
+    return {
+        (path, code)
+        for path, operations in app.openapi()["paths"].items()
+        for operation in operations.values()
+        for code in operation["responses"]
+        if code.startswith(("4", "5"))
+    }
+
+
+def test_every_failure_state_the_frontend_renders_is_in_the_contract() -> None:
+    """A 404 or 429 nobody documented is a screen nobody builds."""
+    assert documented_errors() >= {
+        ("/api/products/{product_id}", "404"),
+        ("/api/products/{product_id}/stores", "404"),
+        ("/api/stores/{store_id}", "404"),
+        ("/api/evidence/receipt", "413"),
+        ("/api/evidence/receipt", "415"),
+        ("/api/evidence/receipt", "429"),
+        ("/api/evidence/receipt", "502"),
+        ("/api/evidence/shelf", "404"),
+        ("/api/evidence/manual", "404"),
+        ("/api/evidence/manual", "429"),
+        ("/api/scan/identify", "429"),
+        ("/api/scan/identify", "502"),
+    }
+
+
+def test_every_documented_error_carries_the_same_detail_body() -> None:
+    schemas = app.openapi()["components"]["schemas"]
+    assert schemas["ErrorResponse"]["required"] == ["detail"]
+
+    for path, operations in app.openapi()["paths"].items():
+        for operation in operations.values():
+            for code, response in operation["responses"].items():
+                if not code.startswith(("4", "5")) or code == "422":
+                    continue
+                body = response["content"]["application/json"]["schema"]
+                assert body["$ref"].endswith("ErrorResponse"), (path, code)
+

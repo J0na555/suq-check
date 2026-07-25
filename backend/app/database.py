@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from functools import lru_cache
 
 from sqlalchemy.engine import URL, make_url
@@ -59,13 +60,20 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(get_engine(), expire_on_commit=False)
 
 
-async def get_db_session() -> AsyncIterator[AsyncSession]:
+@asynccontextmanager
+async def session_scope() -> AsyncIterator[AsyncSession]:
+    """One session, rolled back if the caller raises. Committing is the caller's job."""
     async with get_session_factory()() as session:
         try:
             yield session
         except Exception:
             await session.rollback()
             raise
+
+
+async def get_db_session() -> AsyncIterator[AsyncSession]:
+    async with session_scope() as session:
+        yield session
 
 
 async def close_database() -> None:

@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     migration_database_url: str = ""
     database_pool_size: int = Field(default=5, ge=1, le=20)
     database_echo: bool = False
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-3.5-flash"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

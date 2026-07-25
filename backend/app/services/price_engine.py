@@ -11,6 +11,7 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from decimal import ROUND_HALF_UP, Decimal
+from itertools import pairwise
 from math import log
 from typing import Literal
 from uuid import UUID
@@ -160,7 +161,7 @@ def weighted_quantile(observations: Sequence[WeightedObservation], quantile: flo
     if quantile >= points[-1][0]:
         return points[-1][1]
 
-    for (left_at, left_price), (right_at, right_price) in zip(points, points[1:]):
+    for (left_at, left_price), (right_at, right_price) in pairwise(points):
         if quantile <= right_at:
             span = right_at - left_at
             share = 0.0 if span == 0 else (quantile - left_at) / span
