@@ -103,9 +103,10 @@ class ExtractionError(RuntimeError):
 
 class ReceiptLine(BaseModel):
     raw_text: str
-    quantity: float = Field(default=1, gt=0)
-    unit_price_etb: float = Field(gt=0)
-    total_price_etb: float = Field(gt=0)
+    # Use ge (not gt): Gemini's response_schema rejects exclusiveMinimum.
+    quantity: float = Field(default=1, ge=0.001)
+    unit_price_etb: float = Field(ge=0.001)
+    total_price_etb: float = Field(ge=0.001)
 
 
 class ReceiptDocument(BaseModel):
@@ -127,13 +128,13 @@ class ReceiptDocument(BaseModel):
 
 class ShelfTag(BaseModel):
     raw_product_text: str
-    price_etb: float = Field(gt=0)
+    price_etb: float = Field(ge=0.001)
     ocr_confidence: float = Field(ge=0, le=1)
 
 
 class PriceListLine(BaseModel):
     raw_text: str
-    price_etb: float = Field(gt=0)
+    price_etb: float = Field(ge=0.001)
 
 
 class PriceListDocument(BaseModel):
@@ -159,7 +160,7 @@ class IdentifiedProduct(BaseModel):
     canonical_name: str
     brand: str
     category: str
-    size_value: float = Field(gt=0)
+    size_value: float = Field(ge=0.001)
     size_unit: str
     confidence: float = Field(ge=0, le=1)
 
