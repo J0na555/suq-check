@@ -27,6 +27,10 @@ flowchart TD
     api --> dash[Dashboard]
 ```
 
+
+
+
+
 ## Scope
 
 Supported: packaged household essentials only. Cooking oil, sugar, rice, flour, salt, pasta, coffee, tea, milk, soap, detergent, toothpaste, shampoo, bottled water. Every one has packaging, branding, labels, and appears on receipts, so extraction and normalization are tractable.
@@ -42,6 +46,8 @@ Deferred: fresh produce, eggs, meat, teff. Quality, weight, and freshness vary, 
 - Dashboard: Vite + React + Recharts, deployed as a Render static site
 - Deploy: Render web service for the API, Render static site for the dashboard, Neon for the DB, Expo Go QR for judges
 
+
+
 ## Repo layout
 
 - `contracts/openapi.yaml` and `contracts/fixtures/*.json` the shared boundary between the two coders
@@ -51,6 +57,8 @@ Deferred: fresh produce, eggs, meat, teff. Quality, weight, and freshness vary, 
 - `mobile/` Expo app
 - `dashboard/` Vite app
 - `docs/superpowers/specs/2026-07-25-suqcheck-design.md` the written spec
+
+
 
 ## Data model
 
@@ -164,27 +172,3 @@ The load-bearing idea: a stub API returning fixture JSON is deployed in hour 2, 
 - Camera on a judge's device: sample-image buttons alongside live capture
 - Venue network: deployed URL plus a recorded video
 
-## Task checklist
-
-Owners: A is backend, B is frontend, C/D are the non-coders.
-
-- [ ] **A + B** Freeze the API contract: `contracts/openapi.yaml` for all ten endpoints plus `contracts/fixtures/*.json`, including one high-confidence and one low-confidence product
-- [ ] **A** Deploy the stub API to Render against Neon by hour 4, serving fixtures verbatim with CORS open and `/healthz` green
-- [ ] **A + B** Scaffold the repo: backend FastAPI app, mobile Expo app, dashboard Vite app, `.env.example`, README with setup steps
-- [ ] **B** Add the `openapi-typescript` script emitting `types.ts` into both `mobile/src/api/` and `dashboard/src/api/`
-- [ ] **A** Define SQLAlchemy models and Alembic migrations for product, product_alias, store, evidence, price_estimate, price_history, category_price_bounds; enable `pg_trgm` on Neon
-- [ ] **A** Implement the price engine: weighted median, four confidence sub-scores, staleness cap, breakdown persistence, and inline per-product recompute
-- [ ] **A** Implement the verification gate with category bounds and deviation thresholds producing accepted/pending/rejected with human-readable reasons
-- [ ] **A** Write pytest coverage for the price engine and verification gate, including the boundary cases
-- [ ] **A** Implement normalization: string canonicalization, unit unification, alias exact match, trigram candidates, Gemini fallback, and alias write-back
-- [ ] **A** Implement Gemini services for receipt extraction, shelf tag extraction, and product identification with enforced JSON schemas
-- [ ] **A** Make the read and ingest endpoints real, including pulse with its 60-second cache, product detail, nearby stores with distance, analytics, and per-device rate limiting
-- [ ] **C/D** Research `data/products.csv` (120 products) and `data/stores.csv` (46 Addis stores) by hour 16
-- [ ] **C/D** Photograph real receipts and shelf tags including Amharic ones into `backend/tests/fixtures/images/` by hour 20
-- [ ] **A** Build the seed generator over those CSVs: 60 days of evidence with trends plus deliberately thin and stale products; backfill estimates and history
-- [ ] **B** Build the Expo app: pulse home, search, product detail with the confidence why panel, scan, contribute with extraction review, nearby map
-- [ ] **B** Build the dashboard, three pages only: overview KPIs, live ingestion log, trends
-- [ ] **A** Implement mohasbeza, deliveraddis, and aradamart scrapers behind a shared `ScrapedItem` contract, with a committed JSON snapshot fallback. First to cut
-- [ ] **B** Deploy the dashboard static site and verify the Expo app against the deployed API
-- [ ] **C/D** QA the deployed app from hour 30; write the demo script with the high-confidence, low-confidence, and rejected-outlier beats; rehearse twice; record the backup video
-- [ ] **A** Write the full design spec to `docs/superpowers/specs/2026-07-25-suqcheck-design.md` and commit

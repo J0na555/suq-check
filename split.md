@@ -28,34 +28,42 @@ flowchart TD
     trackB --> live
 ```
 
+
+
+
+
 ## Track A: backend, hour by hour
 
-| Hours | Work |
-| --- | --- |
-| 0 to 2 | Joint contract freeze |
-| 2 to 4 | Neon provisioned, stub API returning fixtures deployed to Render, `/healthz` green |
-| 4 to 10 | SQLAlchemy models, Alembic migrations, `pg_trgm`, price engine with the four confidence sub-scores, pytest for the engine |
-| 10 to 14 | Verification gate, then make the read endpoints real: `/api/pulse`, `/api/products`, `/api/products/{id}`, `/api/products/{id}/stores` |
+
+| Hours    | Work                                                                                                                                                 |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 to 2   | Joint contract freeze                                                                                                                                |
+| 2 to 4   | Neon provisioned, stub API returning fixtures deployed to Render, `/healthz` green                                                                   |
+| 4 to 10  | SQLAlchemy models, Alembic migrations, `pg_trgm`, price engine with the four confidence sub-scores, pytest for the engine                            |
+| 10 to 14 | Verification gate, then make the read endpoints real: `/api/pulse`, `/api/products`, `/api/products/{id}`, `/api/products/{id}/stores`               |
 | 14 to 20 | Gemini `extract_receipt`, `extract_shelf_tag`, `identify_product`, normalization with alias write-back, the three `/api/evidence/*` ingest endpoints |
-| 20 to 26 | Load `data/products.csv` and `data/stores.csv`, generate 60 days of evidence, backfill estimates and history, analytics endpoints |
-| 26 to 32 | Scrapers, the designated cut |
-| 32 to 40 | Rate limiting, QA bug fixes, hardening |
-| 40 to 48 | Buffer and demo support |
+| 20 to 26 | Load `data/products.csv` and `data/stores.csv`, generate 60 days of evidence, backfill estimates and history, analytics endpoints                    |
+| 26 to 32 | Scrapers, the designated cut                                                                                                                         |
+| 32 to 40 | Rate limiting, QA bug fixes, hardening                                                                                                               |
+| 40 to 48 | Buffer and demo support                                                                                                                              |
+
 
 Order matters: read endpoints become real before ingest, because they carry the demo and are the cheapest to implement.
 
 ## Track B: frontend, hour by hour
 
-| Hours | Work |
-| --- | --- |
-| 0 to 2 | Joint contract freeze |
-| 2 to 4 | Expo scaffold, `openapi-typescript` generating `types.ts`, API client pointed at the deployed stub |
-| 4 to 12 | Pulse home, search, and product detail |
+
+| Hours    | Work                                                                                                               |
+| -------- | ------------------------------------------------------------------------------------------------------------------ |
+| 0 to 2   | Joint contract freeze                                                                                              |
+| 2 to 4   | Expo scaffold, `openapi-typescript` generating `types.ts`, API client pointed at the deployed stub                 |
+| 4 to 12  | Pulse home, search, and product detail                                                                             |
 | 12 to 18 | Camera scan and the contribute flow with the editable extraction review screen, built against the fixture response |
-| 18 to 22 | Nearby map and the history sparkline |
-| 22 to 30 | Dashboard, reduced to three pages: overview KPIs, live ingestion log, trends |
-| 30 to 40 | Loading, empty, and error states on the demo path only |
-| 40 to 48 | Buffer and rehearsal support |
+| 18 to 22 | Nearby map and the history sparkline                                                                               |
+| 22 to 30 | Dashboard, reduced to three pages: overview KPIs, live ingestion log, trends                                       |
+| 30 to 40 | Loading, empty, and error states on the demo path only                                                             |
+| 40 to 48 | Buffer and rehearsal support                                                                                       |
+
 
 Product detail is the demo centerpiece, so it gets built first and polished last.
 
@@ -82,6 +90,8 @@ They are not doing slides for 48 hours. They own the data that makes the demo cr
 - Photograph real receipts and shelf tags around Addis, including Amharic ones, committed to `backend/tests/fixtures/images/`. Due hour 20. This is the only real OCR test data anyone will have
 - From hour 30, act as QA against the deployed app and write the demo script
 
+
+
 ## Integration checkpoints
 
 Every six hours both coders pull, push, and open the deployed URL together for ten minutes. At hour 30 the feature list freezes; after that, only bug fixes on the demo path.
@@ -93,9 +103,5 @@ Every six hours both coders pull, push, and open the deployed URL together for t
 3. Nearby map
 4. Everything else is demo-critical
 
-## Setup checklist
 
-- [ ] Write `contracts/openapi.yaml` covering all ten endpoints, plus `contracts/fixtures/*.json` with realistic Ethiopian sample data including one high-confidence and one low-confidence product
-- [ ] Build the stub FastAPI app that serves the fixtures verbatim from every endpoint with CORS open, ready to deploy to Render
-- [ ] Create `data/products.csv` and `data/stores.csv` with headers and a few filled example rows so the non-coders can start researching immediately
-- [ ] Add the `openapi-typescript` generation script that emits `types.ts` and copies it into both `mobile/src/api/` and `dashboard/src/api/`
+
