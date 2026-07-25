@@ -73,8 +73,9 @@ repo must be checked out even though the app lives in `backend/`.
 
 `DATABASE_URL` and `MIGRATION_DATABASE_URL` are marked `sync: false`; set both
 in the Render dashboard so Neon credentials never enter the repository.
-`USE_FIXTURES=true` keeps the deployed API off the database entirely, which is
-what makes the frontend safe to point at on day one.
+Production sets `USE_FIXTURES=false` so the live API serves the engine and Neon
+data. Keep `USE_FIXTURES=true` locally when you want the contract fixtures as a
+frontend fallback without a database.
 
 Every push to `main` redeploys. Confirm a deploy with `/healthz`, which answers
 without touching Postgres:

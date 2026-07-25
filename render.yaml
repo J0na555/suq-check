@@ -17,7 +17,7 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: USE_FIXTURES
-        value: "true"
+        value: "false"
       - key: CORS_ORIGINS
         value: "*"
       - key: DATABASE_URL
@@ -26,5 +26,6 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
+      # Priced in the unit-economics / cost model at $0.30 / $2.50 per 1M tokens.
       - key: GEMINI_MODEL
-        value: gemini-3.5-flash
+        value: gemini-2.5-flash

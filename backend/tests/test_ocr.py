@@ -239,7 +239,7 @@ async def test_without_a_key_nothing_is_sent_at_all(monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr(
         ocr,
         "get_settings",
-        lambda: SimpleNamespace(gemini_api_key="", gemini_model="gemini-3.5-flash"),
+        lambda: SimpleNamespace(gemini_api_key="", gemini_model="gemini-2.5-flash"),
     )
     ocr._client.cache_clear()
 

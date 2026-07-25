@@ -8,7 +8,7 @@ Technical design for SuqCheck, a pricing intelligence platform for Ethiopia: a F
 
 ```mermaid
 flowchart TD
-    receipt[Receipt photo] --> gem[Gemini 3.5 Flash<br/>schema-enforced extraction]
+    receipt[Receipt photo] --> gem[Gemini 2.5 Flash<br/>schema-enforced extraction]
     shelf[Shelf tag photo] --> gem
     manual[Manual entry] --> norm
     scrape[Scrapers: mohasbeza, deliveraddis, aradamart] --> norm
@@ -37,7 +37,7 @@ Deferred: fresh produce, eggs, meat, teff. Quality, weight, and freshness vary, 
 
 - Backend: FastAPI, SQLAlchemy 2.0, Alembic, Pydantic v2, Python 3.12
 - Database: Neon Postgres with `pg_trgm` for fuzzy product matching
-- AI: Gemini `gemini-3.5-flash` with enforced `response_format` JSON schema, `temperature=0.1`
+- AI: Gemini `gemini-2.5-flash` with enforced `response_format` JSON schema, `temperature=0.1`
 - Mobile: Expo (expo-router, expo-camera, expo-location, react-native-maps, @tanstack/react-query, react-native-svg)
 - Dashboard: Vite + React + Recharts, deployed as a Render static site
 - Deploy: Render web service for the API, Render static site for the dashboard, Neon for the DB, Expo Go QR for judges
