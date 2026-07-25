@@ -22,12 +22,14 @@ from app.services import ingest, normalize, rate_limit
 from app.services.ocr import (
     CatalogChoice,
     ExtractionError,
+    GeminiUsage,
     IdentifiedProduct,
     PriceListDocument,
     PriceListLine,
     ReceiptDocument,
     ReceiptLine,
     ShelfTag,
+    remember_usage,
 )
 
 PRODUCTS = {product.canonical_name: product for product in read_products()}
@@ -62,13 +64,22 @@ def receipt(*lines: tuple[str, float], store_name: str | None = "Selam Mart") ->
     )
 
 
+USAGE = GeminiUsage(
+    model="gemini-2.5-flash",
+    prompt_token_count=200,
+    candidates_token_count=50,
+    total_token_count=250,
+)
+
+
 @pytest.fixture
 def gemini_receipt(monkeypatch: pytest.MonkeyPatch):
     """Replace receipt extraction with a canned document."""
 
-    def use(document: ReceiptDocument) -> None:
+    def use(document: ReceiptDocument, *, usage: GeminiUsage | None = USAGE) -> None:
         async def fake(image: bytes, mime_type: str = "image/jpeg") -> ReceiptDocument:
             del image, mime_type
+            remember_usage(usage)
             return document
 
         monkeypatch.setattr(ingest, "extract_receipt", fake)
@@ -78,9 +89,10 @@ def gemini_receipt(monkeypatch: pytest.MonkeyPatch):
 
 @pytest.fixture
 def gemini_shelf_tag(monkeypatch: pytest.MonkeyPatch):
-    def use(tag: ShelfTag) -> None:
+    def use(tag: ShelfTag, *, usage: GeminiUsage | None = USAGE) -> None:
         async def fake(image: bytes, mime_type: str = "image/jpeg") -> ShelfTag:
             del image, mime_type
+            remember_usage(usage)
             return tag
 
         monkeypatch.setattr(ingest, "extract_shelf_tag", fake)
@@ -90,9 +102,10 @@ def gemini_shelf_tag(monkeypatch: pytest.MonkeyPatch):
 
 @pytest.fixture
 def gemini_price_list(monkeypatch: pytest.MonkeyPatch):
-    def use(document: PriceListDocument) -> None:
+    def use(document: PriceListDocument, *, usage: GeminiUsage | None = USAGE) -> None:
         async def fake(image: bytes, mime_type: str = "image/jpeg") -> PriceListDocument:
             del image, mime_type
+            remember_usage(usage)
             return document
 
         monkeypatch.setattr(ingest, "extract_price_list", fake)
@@ -231,6 +244,13 @@ async def test_accepted_evidence_moves_the_estimate_and_keeps_the_thumbnail(
         .order_by(Evidence.created_at.desc())
     )
     assert stored.raw_payload["device_id"] == DEVICE["X-Device-Id"]
+    assert stored.raw_payload["gemini"] == {
+        "model": "gemini-2.5-flash",
+        "prompt_token_count": 200,
+        "candidates_token_count": 50,
+        "total_token_count": 250,
+        "shared_across_observations": 1,
+    }
     # The stub upload is not a real image, so there is nothing to shrink.
     assert stored.thumbnail is None
 
@@ -282,6 +302,51 @@ async def test_price_list_lines_become_store_visit_evidence(
     )
     assert stored is not None
     assert stored.raw_payload["device_id"] == DEVICE["X-Device-Id"]
+    assert stored.raw_payload["gemini"]["shared_across_observations"] == 1
+    assert stored.raw_payload["gemini"]["prompt_token_count"] == 200
+
+
+@pytest.mark.asyncio
+async def test_price_list_token_usage_is_shared_across_matched_lines(
+    writing_client: TestClient,
+    writable_session: AsyncSession,
+    gemini_price_list,
+) -> None:
+    oil_market = await _market_price(writable_session, OIL.id)
+    sugar_market = await _market_price(writable_session, SUGAR.id)
+    gemini_price_list(
+        price_list(
+            (OIL.canonical_name, round(oil_market, 2)),
+            (SUGAR.canonical_name, round(sugar_market, 2)),
+        )
+    )
+
+    response = writing_client.post(
+        "/api/evidence/price-list",
+        files={"image": JPEG},
+        data={"store_id": str(SELAM_MART.id)},
+        headers=DEVICE,
+    )
+    assert response.status_code == 200
+    assert len(response.json()["decisions"]) == 2
+
+    writable_session.expire_all()
+    rows = (
+        await writable_session.scalars(
+            select(Evidence)
+            .where(
+                Evidence.source_type == EvidenceSource.STORE_VISIT,
+                Evidence.store_id == SELAM_MART.id,
+                Evidence.product_id.in_((OIL.id, SUGAR.id)),
+            )
+            .order_by(Evidence.created_at.desc())
+            .limit(2)
+        )
+    ).all()
+    assert len(rows) == 2
+    for stored in rows:
+        assert stored.raw_payload["gemini"]["shared_across_observations"] == 2
+        assert stored.raw_payload["gemini"]["total_token_count"] == 250
 
 
 @pytest.mark.asyncio

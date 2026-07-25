@@ -65,12 +65,17 @@ class FakeCall:
         self.text = text
         self.kwargs: dict[str, Any] = {}
         self.error: Exception | None = None
+        self.usage_metadata = SimpleNamespace(
+            prompt_token_count=120,
+            candidates_token_count=40,
+            total_token_count=160,
+        )
 
     async def generate_content(self, **kwargs: Any) -> Any:
         self.kwargs = kwargs
         if self.error is not None:
             raise self.error
-        return SimpleNamespace(text=self.text)
+        return SimpleNamespace(text=self.text, usage_metadata=self.usage_metadata)
 
 
 @pytest.fixture
@@ -101,6 +106,22 @@ async def test_a_receipt_call_sends_the_image_before_the_prompt(gemini) -> None:
     assert receipt.store_name == "Selam Mart"
     assert receipt.observed_date == date(2026, 7, 20)
     assert receipt.items[0].unit_price_etb == 340.0
+
+
+@pytest.mark.asyncio
+async def test_usage_metadata_is_available_via_pop_usage(gemini) -> None:
+    gemini(RECEIPT_JSON)
+
+    await ocr.extract_receipt(IMAGE)
+    usage = ocr.pop_usage()
+
+    assert usage is not None
+    assert usage.model == ocr.get_settings().gemini_model
+    assert usage.prompt_token_count == 120
+    assert usage.candidates_token_count == 40
+    assert usage.total_token_count == 160
+    assert ocr.pop_usage() is None
+    assert usage.as_payload(shared_across_observations=4)["shared_across_observations"] == 4
 
 
 @pytest.mark.asyncio

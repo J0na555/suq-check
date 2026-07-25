@@ -142,6 +142,26 @@ def test_trends_contract() -> None:
     assert response.json()["period_days"] == 30
 
 
+def test_unit_economics_contract() -> None:
+    response = client.get("/api/analytics/unit-economics", params={"period_days": 30})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["period_days"] == 30
+    assert body["cost_per_verified_observation_etb"] is not None
+    assert {item["id"] for item in body["benchmarks"]} == {
+        "wfp_face_to_face",
+        "field_agent_sa",
+        "premise_capture",
+        "suqcheck_modelled",
+    }
+    modelled = next(item for item in body["benchmarks"] if item["id"] == "suqcheck_modelled")
+    assert modelled["min_etb"] == 5.9
+    wfp = next(item for item in body["benchmarks"] if item["id"] == "wfp_face_to_face")
+    assert wfp["min_etb"] == 3160
+    assert wfp["max_etb"] == 6320
+
+
 def test_evidence_log_lists_every_gate_decision() -> None:
     response = client.get("/api/evidence")
 
@@ -164,9 +184,10 @@ def test_openapi_exposes_exactly_twelve_product_endpoints_plus_health() -> None:
     paths = app.openapi()["paths"]
 
     operation_count = sum(len(operations) for operations in paths.values())
-    assert operation_count == 13
+    assert operation_count == 14
     assert "/healthz" in paths
     assert "/api/evidence/price-list" in paths
+    assert "/api/analytics/unit-economics" in paths
 
 
 def documented_errors() -> set[tuple[str, str]]:

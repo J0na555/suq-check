@@ -5,11 +5,17 @@ so the output is a model instance rather than prose to parse. Amharic receipts
 are the accuracy risk the design accepts: the app shows every extraction for the
 shopper to correct before it becomes evidence.
 
+Token counts from each call land in a contextvar via `pop_usage()` so ingest can
+write them onto evidence without changing every extract return type. Callers that
+care about cost must pop immediately after the extract they own — later Gemini
+calls (catalog matching) overwrite the same slot.
+
 The SDK is imported inside these functions on purpose: a fixture-mode deployment
 serves the whole contract without ever reading an image, and it should not pay the
 SDK's import cost at boot to do it.
 """
 
+from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
@@ -22,6 +28,8 @@ from app.config import get_settings
 
 TEMPERATURE = 0.1
 MAX_CANDIDATES = 5
+
+_last_usage: ContextVar["GeminiUsage | None"] = ContextVar("gemini_usage", default=None)
 
 
 class MediaResolution(StrEnum):
@@ -169,6 +177,55 @@ class CatalogCandidate:
     similarity: float
 
 
+@dataclass(frozen=True, slots=True)
+class GeminiUsage:
+    """Token counts from one `generate_content` call."""
+
+    model: str
+    prompt_token_count: int = 0
+    candidates_token_count: int = 0
+    total_token_count: int = 0
+
+    def as_payload(self, *, shared_across_observations: int = 1) -> dict[str, Any]:
+        """Shape stored on `evidence.raw_payload["gemini"]`.
+
+        Multi-line receipts and price lists share one call across N evidence rows.
+        Aggregators divide by `shared_across_observations` so a 28-line list is not
+        billed 28 times.
+        """
+        return {
+            "model": self.model,
+            "prompt_token_count": self.prompt_token_count,
+            "candidates_token_count": self.candidates_token_count,
+            "total_token_count": self.total_token_count,
+            "shared_across_observations": max(shared_across_observations, 1),
+        }
+
+
+def pop_usage() -> GeminiUsage | None:
+    """Take the usage recorded by the most recent `_ask` in this task."""
+    usage = _last_usage.get()
+    _last_usage.set(None)
+    return usage
+
+
+def remember_usage(usage: GeminiUsage | None) -> None:
+    """Test seam: plant usage the way `_ask` would after a real Gemini call."""
+    _last_usage.set(usage)
+
+
+def _usage_from(response: Any, *, model: str) -> GeminiUsage | None:
+    metadata = getattr(response, "usage_metadata", None)
+    if metadata is None:
+        return None
+    return GeminiUsage(
+        model=model,
+        prompt_token_count=int(getattr(metadata, "prompt_token_count", 0) or 0),
+        candidates_token_count=int(getattr(metadata, "candidates_token_count", 0) or 0),
+        total_token_count=int(getattr(metadata, "total_token_count", 0) or 0),
+    )
+
+
 @lru_cache
 def _client() -> Any:
     settings = get_settings()
@@ -206,14 +263,17 @@ async def _ask[Answer: BaseModel](
     if media_resolution is not None:
         config_kwargs["media_resolution"] = types.MediaResolution(media_resolution.value)
 
+    model = get_settings().gemini_model
     try:
         response = await client.aio.models.generate_content(
-            model=get_settings().gemini_model,
+            model=model,
             contents=parts,
             config=types.GenerateContentConfig(**config_kwargs),
         )
     except Exception as error:  # the SDK raises its own hierarchy
         raise ExtractionError(f"Gemini call failed: {error}") from error
+
+    _last_usage.set(_usage_from(response, model=model))
 
     if not response.text:
         raise ExtractionError("Gemini returned an empty response")

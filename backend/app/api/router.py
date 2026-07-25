@@ -17,9 +17,10 @@ from app.repositories import (
     load_pulse,
     load_store_detail,
     load_trends,
+    load_unit_economics,
     search_products,
 )
-from app.schemas.analytics import TrendsResponse
+from app.schemas.analytics import TrendsResponse, UnitEconomicsResponse
 from app.schemas.common import Category, ErrorResponse, EvidenceStatus, HealthResponse
 from app.schemas.evidence import (
     EvidenceLogResponse,
@@ -377,6 +378,23 @@ async def get_trends(
         return await load_trends(session, period_days=period_days)
 
     result = TrendsResponse.model_validate(load_fixture("trends.json"))
+    result.period_days = period_days
+    return result
+
+
+@router.get(
+    "/api/analytics/unit-economics",
+    response_model=UnitEconomicsResponse,
+    tags=["analytics"],
+)
+async def get_unit_economics(
+    session: SessionDep,
+    period_days: Annotated[int, Query(ge=1, le=90)] = 30,
+) -> UnitEconomicsResponse:
+    if session is not None:
+        return await load_unit_economics(session, period_days=period_days)
+
+    result = UnitEconomicsResponse.model_validate(load_fixture("unit_economics.json"))
     result.period_days = period_days
     return result
 

@@ -614,6 +614,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/analytics/unit-economics:
+    get:
+      tags:
+      - analytics
+      summary: Get Unit Economics
+      operationId: get_unit_economics_api_analytics_unit_economics_get
+      parameters:
+      - name: period_days
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 90
+          minimum: 1
+          default: 30
+          title: Period Days
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitEconomicsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
     Body_identify_product_api_scan_identify_post:
@@ -730,6 +759,36 @@ components:
       - weight
       - detail
       title: ConfidenceFactor
+    CostBenchmark:
+      properties:
+        id:
+          type: string
+          title: Id
+        label:
+          type: string
+          title: Label
+        min_etb:
+          type: number
+          title: Min Etb
+        max_etb:
+          type: number
+          title: Max Etb
+        unit:
+          type: string
+          title: Unit
+          description: What one unit of this benchmark buys.
+        source:
+          type: string
+          title: Source
+      type: object
+      required:
+      - id
+      - label
+      - min_etb
+      - max_etb
+      - unit
+      - source
+      title: CostBenchmark
     ErrorResponse:
       properties:
         detail:
@@ -1622,6 +1681,44 @@ components:
       - extraction
       - decision
       title: ShelfUploadResponse
+    SourceEconomics:
+      properties:
+        source_type:
+          type: string
+          title: Source Type
+        observations:
+          type: integer
+          title: Observations
+        verified_observations:
+          type: integer
+          title: Verified Observations
+        prompt_tokens:
+          type: number
+          title: Prompt Tokens
+        candidates_tokens:
+          type: number
+          title: Candidates Tokens
+        total_tokens:
+          type: number
+          title: Total Tokens
+        gemini_cost_etb:
+          type: number
+          title: Gemini Cost Etb
+        cost_per_verified_observation_etb:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Cost Per Verified Observation Etb
+      type: object
+      required:
+      - source_type
+      - observations
+      - verified_observations
+      - prompt_tokens
+      - candidates_tokens
+      - total_tokens
+      - gemini_cost_etb
+      title: SourceEconomics
     SourceSummary:
       properties:
         source_type:
@@ -1730,6 +1827,72 @@ components:
       - period_days
       - items
       title: TrendsResponse
+    UnitEconomicsResponse:
+      properties:
+        period_days:
+          type: integer
+          title: Period Days
+        observations:
+          type: integer
+          title: Observations
+        verified_observations:
+          type: integer
+          title: Verified Observations
+        prompt_tokens:
+          type: number
+          title: Prompt Tokens
+        candidates_tokens:
+          type: number
+          title: Candidates Tokens
+        total_tokens:
+          type: number
+          title: Total Tokens
+        gemini_cost_usd:
+          type: number
+          title: Gemini Cost Usd
+        gemini_cost_etb:
+          type: number
+          title: Gemini Cost Etb
+        cost_per_verified_observation_etb:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Cost Per Verified Observation Etb
+        usd_to_etb:
+          type: number
+          title: Usd To Etb
+        gemini_input_usd_per_mtok:
+          type: number
+          title: Gemini Input Usd Per Mtok
+        gemini_output_usd_per_mtok:
+          type: number
+          title: Gemini Output Usd Per Mtok
+        by_source:
+          items:
+            $ref: '#/components/schemas/SourceEconomics'
+          type: array
+          title: By Source
+        benchmarks:
+          items:
+            $ref: '#/components/schemas/CostBenchmark'
+          type: array
+          title: Benchmarks
+      type: object
+      required:
+      - period_days
+      - observations
+      - verified_observations
+      - prompt_tokens
+      - candidates_tokens
+      - total_tokens
+      - gemini_cost_usd
+      - gemini_cost_etb
+      - usd_to_etb
+      - gemini_input_usd_per_mtok
+      - gemini_output_usd_per_mtok
+      - by_source
+      - benchmarks
+      title: UnitEconomicsResponse
     ValidationError:
       properties:
         loc:

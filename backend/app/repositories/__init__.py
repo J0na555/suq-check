@@ -1,4 +1,4 @@
-from app.repositories.analytics import load_trends, price_changes
+from app.repositories.analytics import load_trends, load_unit_economics, price_changes
 from app.repositories.evidence import load_evidence_log
 from app.repositories.products import (
     load_nearby_stores,
@@ -15,6 +15,7 @@ __all__ = [
     "load_pulse",
     "load_store_detail",
     "load_trends",
+    "load_unit_economics",
     "price_changes",
     "search_products",
 ]

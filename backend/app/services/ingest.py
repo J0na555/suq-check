@@ -36,13 +36,17 @@ from app.schemas.evidence import (
     ShelfUploadResponse,
 )
 from app.services import thumbnail
-from app.services.normalize import resolve_text
+from app.services.normalize import Match, resolve_text
 from app.services.ocr import (
     ExtractionError,
+    GeminiUsage,
+    PriceListLine,
+    ReceiptLine,
     extract_price_list,
     extract_receipt,
     extract_shelf_tag,
     identify_product,
+    pop_usage,
 )
 from app.services.verification import Decision, submit_evidence
 
@@ -60,12 +64,15 @@ async def ingest_receipt(
 ) -> ReceiptUploadResponse:
     moment = now or datetime.now(timezone.utc)
     receipt = await extract_receipt(image.data, image.mime_type)
+    # Pop before resolve_text: catalog matching may call Gemini and overwrite usage.
+    usage = pop_usage()
     store = await find_store_by_name(session, receipt.store_name)
     observed_at = _printed_moment(receipt.observed_date, moment)
     small_copy = thumbnail.of(image.data)
 
     items: list[ExtractedLineItem] = []
     decisions: list[EvidenceDecision] = []
+    matched_lines: list[tuple[ReceiptLine, Match]] = []
     for line in receipt.items:
         match = await resolve_text(session, line.raw_text, source="receipt")
         items.append(
@@ -81,10 +88,15 @@ async def ingest_receipt(
         )
         if match.product is None:
             continue
+        matched_lines.append((line, match))
 
+    shared = len(matched_lines)
+    for line, match in matched_lines:
+        product = match.product
+        assert product is not None
         evidence, decision = await submit_evidence(
             session,
-            product=match.product,
+            product=product,
             price_etb=line.unit_price_etb,
             source_type=EvidenceSource.RECEIPT,
             observed_at=observed_at,
@@ -95,11 +107,12 @@ async def ingest_receipt(
                 raw_text=line.raw_text,
                 match_method=match.method,
                 store_name=receipt.store_name,
+                gemini=_gemini_payload(usage, shared_across=shared),
             ),
             thumbnail=small_copy,
             now=moment,
         )
-        decisions.append(_decision(evidence, match.product, decision))
+        decisions.append(_decision(evidence, product, decision))
 
     return ReceiptUploadResponse(
         extraction=ReceiptExtraction(
@@ -128,11 +141,13 @@ async def ingest_price_list(
         raise MissingReference("Store not found")
 
     document = await extract_price_list(image.data, image.mime_type)
+    usage = pop_usage()
     observed_at = _printed_moment(document.observed_date, moment)
     small_copy = thumbnail.of(image.data)
 
     items: list[ExtractedLineItem] = []
     decisions: list[EvidenceDecision] = []
+    matched_lines: list[tuple[PriceListLine, Match]] = []
     for line in document.items:
         match = await resolve_text(session, line.raw_text, source="price_list")
         items.append(
@@ -148,10 +163,15 @@ async def ingest_price_list(
         )
         if match.product is None:
             continue
+        matched_lines.append((line, match))
 
+    shared = len(matched_lines)
+    for line, match in matched_lines:
+        product = match.product
+        assert product is not None
         evidence, decision = await submit_evidence(
             session,
-            product=match.product,
+            product=product,
             price_etb=line.price_etb,
             source_type=EvidenceSource.STORE_VISIT,
             observed_at=observed_at,
@@ -162,11 +182,12 @@ async def ingest_price_list(
                 raw_text=line.raw_text,
                 match_method=match.method,
                 store_name=store.name,
+                gemini=_gemini_payload(usage, shared_across=shared),
             ),
             thumbnail=small_copy,
             now=moment,
         )
-        decisions.append(_decision(evidence, match.product, decision))
+        decisions.append(_decision(evidence, product, decision))
 
     return PriceListUploadResponse(
         extraction=PriceListExtraction(
@@ -189,6 +210,7 @@ async def ingest_shelf_tag(
 ) -> ShelfUploadResponse:
     moment = now or datetime.now(timezone.utc)
     tag = await extract_shelf_tag(image.data, image.mime_type)
+    usage = pop_usage()
     match = await resolve_text(session, tag.raw_product_text, source="shelf_photo")
     if match.product is None:
         raise MissingReference(
@@ -206,6 +228,7 @@ async def ingest_shelf_tag(
             device_id,
             raw_text=tag.raw_product_text,
             match_method=match.method,
+            gemini=_gemini_payload(usage, shared_across=1),
         ),
         thumbnail=thumbnail.of(image.data),
         now=moment,
@@ -297,6 +320,12 @@ def _decision(evidence: Evidence, product: Product, decision: Decision) -> Evide
 
 def _payload(device_id: str | None, **extra: Any) -> dict[str, Any]:
     return {"device_id": device_id, **{key: value for key, value in extra.items() if value}}
+
+
+def _gemini_payload(usage: GeminiUsage | None, *, shared_across: int) -> dict[str, Any] | None:
+    if usage is None:
+        return None
+    return usage.as_payload(shared_across_observations=max(shared_across, 1))
 
 
 def _printed_moment(printed_on: date | None, now: datetime) -> datetime:
