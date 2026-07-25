@@ -23,6 +23,8 @@ from app.services.ocr import (
     CatalogChoice,
     ExtractionError,
     IdentifiedProduct,
+    PriceListDocument,
+    PriceListLine,
     ReceiptDocument,
     ReceiptLine,
     ShelfTag,
@@ -82,6 +84,18 @@ def gemini_shelf_tag(monkeypatch: pytest.MonkeyPatch):
             return tag
 
         monkeypatch.setattr(ingest, "extract_shelf_tag", fake)
+
+    return use
+
+
+@pytest.fixture
+def gemini_price_list(monkeypatch: pytest.MonkeyPatch):
+    def use(document: PriceListDocument) -> None:
+        async def fake(image: bytes, mime_type: str = "image/jpeg") -> PriceListDocument:
+            del image, mime_type
+            return document
+
+        monkeypatch.setattr(ingest, "extract_price_list", fake)
 
     return use
 
@@ -219,6 +233,95 @@ async def test_accepted_evidence_moves_the_estimate_and_keeps_the_thumbnail(
     assert stored.raw_payload["device_id"] == DEVICE["X-Device-Id"]
     # The stub upload is not a real image, so there is nothing to shrink.
     assert stored.thumbnail is None
+
+
+def price_list(*lines: tuple[str, float]) -> PriceListDocument:
+    return PriceListDocument(
+        store_name=None,
+        observed_on=None,
+        ocr_confidence=0.94,
+        items=[PriceListLine(raw_text=text, price_etb=price) for text, price in lines],
+    )
+
+
+@pytest.mark.asyncio
+async def test_price_list_lines_become_store_visit_evidence(
+    writing_client: TestClient,
+    writable_session: AsyncSession,
+    gemini_price_list,
+) -> None:
+    market = await _market_price(writable_session, OIL.id)
+    gemini_price_list(price_list((OIL.canonical_name, round(market, 2))))
+
+    response = writing_client.post(
+        "/api/evidence/price-list",
+        files={"image": JPEG},
+        data={"store_id": str(SELAM_MART.id)},
+        headers=DEVICE,
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["extraction"]["store_id"] == str(SELAM_MART.id)
+    assert body["extraction"]["store_name"] == SELAM_MART.name
+    item = body["extraction"]["items"][0]
+    assert item["matched_product_id"] == str(OIL.id)
+    assert item["quantity"] == 1
+    decision = body["decisions"][0]
+    assert decision["source_type"] == "store_visit"
+    assert decision["status"] == "accepted"
+
+    stored = await writable_session.scalar(
+        select(Evidence)
+        .where(
+            Evidence.product_id == OIL.id,
+            Evidence.source_type == EvidenceSource.STORE_VISIT,
+            Evidence.store_id == SELAM_MART.id,
+        )
+        .order_by(Evidence.created_at.desc())
+    )
+    assert stored is not None
+    assert stored.raw_payload["device_id"] == DEVICE["X-Device-Id"]
+
+
+@pytest.mark.asyncio
+async def test_an_unknown_price_list_line_is_reported_but_not_stored(
+    writing_client: TestClient,
+    writable_session: AsyncSession,
+    gemini_price_list,
+) -> None:
+    before = await writable_session.scalar(select(func.count()).select_from(Evidence))
+    gemini_price_list(price_list(("ZAMBEZI FLOOR POLISH 4L", 260.0)))
+
+    response = writing_client.post(
+        "/api/evidence/price-list",
+        files={"image": JPEG},
+        data={"store_id": str(SELAM_MART.id)},
+        headers=DEVICE,
+    )
+
+    body = response.json()
+    assert body["extraction"]["items"][0]["matched_product_id"] is None
+    assert body["decisions"] == []
+    writable_session.expire_all()
+    assert await writable_session.scalar(select(func.count()).select_from(Evidence)) == before
+
+
+def test_price_list_for_an_unknown_store_is_404(
+    writing_client: TestClient,
+    gemini_price_list,
+) -> None:
+    gemini_price_list(price_list((OIL.canonical_name, 340.0)))
+
+    response = writing_client.post(
+        "/api/evidence/price-list",
+        files={"image": JPEG},
+        data={"store_id": "44444444-4444-4444-8444-444444444444"},
+        headers=DEVICE,
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Store not found"
 
 
 @pytest.mark.asyncio

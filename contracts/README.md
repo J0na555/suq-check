@@ -5,7 +5,7 @@ generated from the FastAPI/Pydantic schemas and must not be edited by hand.
 
 ## Current state
 
-All eleven product operations plus `/healthz` answer from the database when
+All twelve product operations plus `/healthz` answer from the database when
 `USE_FIXTURES=false`, and from the fixtures in `fixtures/` otherwise. Response
 shapes are identical either way, so pointing at a deployed stub and pointing at
 a seeded database are the same integration.
@@ -15,7 +15,7 @@ The fixtures still describe the demo beats the app is built around:
 - a 98%-confidence cooking-oil product
 - a low-confidence soap product
 - nearby cheap and expensive stores
-- receipt and shelf-photo extraction results
+- receipt, shelf-photo, and posted price-list extraction results
 - the 120 ETB pending-verification outlier
 - seven-day rising and falling price trends
 - an ingestion log mixing accepted, pending, and rejected evidence
@@ -40,9 +40,11 @@ npx openapi-typescript contracts/openapi.yaml -o mobile/src/api/types.ts
 npx openapi-typescript contracts/openapi.yaml -o dashboard/src/api/types.ts
 ```
 
-Uploads are `multipart/form-data` with a field named `image`. Manual evidence
-uses JSON. Send a stable anonymous `X-Device-Id` header on every write request:
-it is what the rate limiter counts against.
+Uploads are `multipart/form-data` with a field named `image`. Price-list uploads
+also require a `store_id` form field (UUID); the store is chosen in the app, not
+guessed from OCR. Manual evidence uses JSON. Send a stable anonymous
+`X-Device-Id` header on every write request: it is what the rate limiter counts
+against.
 
 Error states the write endpoints can return, all with a `{"detail": "..."}`
 body that is safe to show verbatim:
@@ -55,9 +57,11 @@ body that is safe to show verbatim:
 | 429 | Over the upload limit for this device or network | Wait `Retry-After` seconds |
 | 502 | Gemini could not read the image | Offer a retake, and manual entry as a fallback |
 
-Receipt uploads answer 200 even when nothing matched: every line comes back in
-`extraction.items` with `matched_product_id: null`, and `decisions` is empty.
-Show the extraction for correction rather than treating it as a failure.
+Receipt and price-list uploads answer 200 even when nothing matched: every line
+comes back in `extraction.items` with `matched_product_id: null`, and
+`decisions` is empty. Show the extraction for correction rather than treating
+it as a failure. Matched price-list lines are recorded as `store_visit`
+evidence against the supplied store.
 
 ## Change rule
 

@@ -93,6 +93,21 @@ def test_shelf_upload_contract() -> None:
     assert response.json()["decision"]["status"] == "accepted"
 
 
+def test_price_list_upload_contract() -> None:
+    response = client.post(
+        "/api/evidence/price-list",
+        files={"image": ("price-list.jpg", b"fixture-image", "image/jpeg")},
+        data={"store_id": str(STORE_ID)},
+        headers={"X-Device-Id": "test-device"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["extraction"]["store_id"] == str(STORE_ID)
+    assert len(body["decisions"]) == 2
+    assert {item["source_type"] for item in body["decisions"]} == {"store_visit"}
+
+
 def test_manual_evidence_demonstrates_pending_outlier() -> None:
     response = client.post(
         "/api/evidence/manual",
@@ -145,12 +160,13 @@ def test_evidence_log_filters_by_status() -> None:
     assert "needs verification" in body["items"][0]["rejection_reason"]
 
 
-def test_openapi_exposes_exactly_eleven_product_endpoints_plus_health() -> None:
+def test_openapi_exposes_exactly_twelve_product_endpoints_plus_health() -> None:
     paths = app.openapi()["paths"]
 
     operation_count = sum(len(operations) for operations in paths.values())
-    assert operation_count == 12
+    assert operation_count == 13
     assert "/healthz" in paths
+    assert "/api/evidence/price-list" in paths
 
 
 def documented_errors() -> set[tuple[str, str]]:
@@ -173,6 +189,11 @@ def test_every_failure_state_the_frontend_renders_is_in_the_contract() -> None:
         ("/api/evidence/receipt", "415"),
         ("/api/evidence/receipt", "429"),
         ("/api/evidence/receipt", "502"),
+        ("/api/evidence/price-list", "404"),
+        ("/api/evidence/price-list", "413"),
+        ("/api/evidence/price-list", "415"),
+        ("/api/evidence/price-list", "429"),
+        ("/api/evidence/price-list", "502"),
         ("/api/evidence/shelf", "404"),
         ("/api/evidence/manual", "404"),
         ("/api/evidence/manual", "429"),

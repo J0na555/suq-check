@@ -340,6 +340,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/evidence/price-list:
+    post:
+      tags:
+      - evidence
+      summary: Upload Price List
+      operationId: upload_price_list_api_evidence_price_list_post
+      parameters:
+      - name: X-Device-Id
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Anonymous device identifier used for rate limiting.
+          title: X-Device-Id
+        description: Anonymous device identifier used for rate limiting.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_price_list_api_evidence_price_list_post'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceListUploadResponse'
+        '429':
+          description: The per-device or per-network upload limit was reached. The
+            `Retry-After` header carries the wait in seconds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: The image is larger than 8MB.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '415':
+          description: The image must be one of image/jpeg, image/png, image/webp.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: The image could not be read; ask the shopper to retake it.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The report names a store that does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/evidence/shelf:
     post:
       tags:
@@ -560,6 +627,23 @@ components:
       required:
       - image
       title: Body_identify_product_api_scan_identify_post
+    Body_upload_price_list_api_evidence_price_list_post:
+      properties:
+        image:
+          type: string
+          contentMediaType: application/octet-stream
+          title: Image
+          description: JPEG, PNG, or WebP posted price-list image.
+        store_id:
+          type: string
+          format: uuid
+          title: Store Id
+          description: Store where the price list was photographed.
+      type: object
+      required:
+      - image
+      - store_id
+      title: Body_upload_price_list_api_evidence_price_list_post
     Body_upload_receipt_api_evidence_receipt_post:
       properties:
         image:
@@ -1006,6 +1090,52 @@ components:
       - market_price_etb
       - items
       title: NearbyStoresResponse
+    PriceListExtraction:
+      properties:
+        store_id:
+          type: string
+          format: uuid
+          title: Store Id
+        store_name:
+          type: string
+          title: Store Name
+        observed_on:
+          anyOf:
+          - type: string
+            format: date
+          - type: 'null'
+          title: Observed On
+        ocr_confidence:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Ocr Confidence
+        items:
+          items:
+            $ref: '#/components/schemas/ExtractedLineItem'
+          type: array
+          title: Items
+      type: object
+      required:
+      - store_id
+      - store_name
+      - ocr_confidence
+      - items
+      title: PriceListExtraction
+    PriceListUploadResponse:
+      properties:
+        extraction:
+          $ref: '#/components/schemas/PriceListExtraction'
+        decisions:
+          items:
+            $ref: '#/components/schemas/EvidenceDecision'
+          type: array
+          title: Decisions
+      type: object
+      required:
+      - extraction
+      - decisions
+      title: PriceListUploadResponse
     ProductDetail:
       properties:
         id:

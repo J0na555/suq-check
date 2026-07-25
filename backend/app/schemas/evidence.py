@@ -49,6 +49,19 @@ class ReceiptUploadResponse(BaseModel):
     decisions: list[EvidenceDecision]
 
 
+class PriceListExtraction(BaseModel):
+    store_id: UUID
+    store_name: str
+    observed_on: date | None = None
+    ocr_confidence: float = Field(ge=0, le=1)
+    items: list[ExtractedLineItem]
+
+
+class PriceListUploadResponse(BaseModel):
+    extraction: PriceListExtraction
+    decisions: list[EvidenceDecision]
+
+
 class ShelfUploadResponse(BaseModel):
     extraction: ShelfExtraction
     decision: EvidenceDecision

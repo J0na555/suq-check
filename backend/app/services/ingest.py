@@ -12,6 +12,7 @@ already shows the extraction for correction before anything is submitted.
 
 from datetime import date, datetime, time, timezone
 from typing import Any
+from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,6 +27,8 @@ from app.schemas.evidence import (
     ExtractedLineItem,
     ManualEvidenceRequest,
     ManualEvidenceResponse,
+    PriceListExtraction,
+    PriceListUploadResponse,
     ProductIdentification,
     ReceiptExtraction,
     ReceiptUploadResponse,
@@ -34,7 +37,13 @@ from app.schemas.evidence import (
 )
 from app.services import thumbnail
 from app.services.normalize import resolve_text
-from app.services.ocr import ExtractionError, extract_receipt, extract_shelf_tag, identify_product
+from app.services.ocr import (
+    ExtractionError,
+    extract_price_list,
+    extract_receipt,
+    extract_shelf_tag,
+    identify_product,
+)
 from app.services.verification import Decision, submit_evidence
 
 
@@ -98,6 +107,73 @@ async def ingest_receipt(
             observed_on=receipt.observed_date,
             total_etb=receipt.total_etb,
             ocr_confidence=receipt.ocr_confidence,
+            items=items,
+        ),
+        decisions=decisions,
+    )
+
+
+async def ingest_price_list(
+    session: AsyncSession,
+    image: Image,
+    *,
+    store_id: UUID,
+    device_id: str | None = None,
+    now: datetime | None = None,
+) -> PriceListUploadResponse:
+    """Posted price list under Directive 159/2024: many lines, known store."""
+    moment = now or datetime.now(timezone.utc)
+    store = await session.get(Store, store_id)
+    if store is None:
+        raise MissingReference("Store not found")
+
+    document = await extract_price_list(image.data, image.mime_type)
+    observed_at = _printed_moment(document.observed_date, moment)
+    small_copy = thumbnail.of(image.data)
+
+    items: list[ExtractedLineItem] = []
+    decisions: list[EvidenceDecision] = []
+    for line in document.items:
+        match = await resolve_text(session, line.raw_text, source="price_list")
+        items.append(
+            ExtractedLineItem(
+                raw_text=line.raw_text,
+                quantity=1,
+                unit_price_etb=line.price_etb,
+                total_price_etb=line.price_etb,
+                matched_product_id=match.product.id if match.product else None,
+                matched_product_name=match.product.canonical_name if match.product else None,
+                match_confidence=round(match.confidence, 4),
+            )
+        )
+        if match.product is None:
+            continue
+
+        evidence, decision = await submit_evidence(
+            session,
+            product=match.product,
+            price_etb=line.price_etb,
+            source_type=EvidenceSource.STORE_VISIT,
+            observed_at=observed_at,
+            store_id=store.id,
+            ocr_confidence=document.ocr_confidence,
+            raw_payload=_payload(
+                device_id,
+                raw_text=line.raw_text,
+                match_method=match.method,
+                store_name=store.name,
+            ),
+            thumbnail=small_copy,
+            now=moment,
+        )
+        decisions.append(_decision(evidence, match.product, decision))
+
+    return PriceListUploadResponse(
+        extraction=PriceListExtraction(
+            store_id=store.id,
+            store_name=store.name,
+            observed_on=document.observed_date,
+            ocr_confidence=document.ocr_confidence,
             items=items,
         ),
         decisions=decisions,

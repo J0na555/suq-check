@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, File, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile, status
 
 from app.api.deps import RATE_LIMIT_RESPONSES, DeviceIdHeader, RateLimited, SessionDep
 from app.api.uploads import UPLOAD_RESPONSES, read_image
@@ -25,6 +25,7 @@ from app.schemas.evidence import (
     EvidenceLogResponse,
     ManualEvidenceRequest,
     ManualEvidenceResponse,
+    PriceListUploadResponse,
     ProductIdentification,
     ReceiptUploadResponse,
     ShelfUploadResponse,
@@ -40,6 +41,7 @@ from app.services.ingest import (
     MissingReference,
     identify_from_image,
     ingest_manual_report,
+    ingest_price_list,
     ingest_receipt,
     ingest_shelf_tag,
 )
@@ -251,6 +253,39 @@ async def upload_receipt(
     photo = await read_image(image)
     with _extraction_errors():
         response = await ingest_receipt(session, photo, device_id=device_id)
+    await session.commit()
+    return response
+
+
+@router.post(
+    "/api/evidence/price-list",
+    response_model=PriceListUploadResponse,
+    tags=["evidence"],
+    dependencies=[RateLimited],
+    responses={
+        **WRITE_RESPONSES,
+        **not_found("The report names a store that does not exist."),
+    },
+)
+async def upload_price_list(
+    image: Annotated[UploadFile, File(description="JPEG, PNG, or WebP posted price-list image.")],
+    store_id: Annotated[UUID, Form(description="Store where the price list was photographed.")],
+    session: SessionDep,
+    device_id: DeviceIdHeader = None,
+) -> PriceListUploadResponse:
+    if session is None:
+        return PriceListUploadResponse.model_validate(load_fixture("price_list_upload.json"))
+
+    photo = await read_image(image)
+    with _extraction_errors():
+        try:
+            response = await ingest_price_list(
+                session, photo, store_id=store_id, device_id=device_id
+            )
+        except MissingReference as error:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=str(error)
+            ) from error
     await session.commit()
     return response
 
