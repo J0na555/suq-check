@@ -6,12 +6,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import router
 from app.config import get_settings
+from app.database import close_database
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    # Database and Gemini clients will be initialized here in later steps.
     yield
+    await close_database()
 
 
 def create_app() -> FastAPI:

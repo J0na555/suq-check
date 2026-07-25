@@ -16,6 +16,35 @@ uvicorn app.main:app --reload
 
 Open `http://127.0.0.1:8000/docs` for interactive documentation.
 
+## Database
+
+Copy `.env.example` to `.env`. Neon provides two connection strings:
+
+- `DATABASE_URL`: pooled hostname containing `-pooler`; used by the API
+- `MIGRATION_DATABASE_URL`: direct hostname without `-pooler`; used by Alembic
+
+Keep both credentials in `.env` and never commit them. The API deliberately
+uses no local SQLAlchemy pool when connected through Neon's PgBouncer endpoint,
+avoiding double pooling.
+
+Create or upgrade the schema:
+
+```bash
+alembic upgrade head
+```
+
+Inspect the current revision:
+
+```bash
+alembic current
+```
+
+The initial migration creates `pg_trgm`, the seven planned tables, constraints,
+and the trigram GIN index used for product-alias matching. `USE_FIXTURES=true`
+keeps all existing API routes on contract fixtures while the database layer is
+being built. Setting it to `false` will only be useful after the read
+repositories are implemented.
+
 ## Frontend contract
 
 - Base URL: `http://127.0.0.1:8000` locally

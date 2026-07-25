@@ -1,27 +1,40 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "suqcheck-api"
 version = "0.1.0"
 description = "Evidence-backed pricing intelligence API"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.16",
+    "asyncpg>=0.30",
     "fastapi>=0.116",
     "pydantic-settings>=2.10",
     "python-multipart>=0.0.20",
+    "sqlalchemy[asyncio]>=2.0",
     "uvicorn[standard]>=0.35",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "aiosqlite>=0.21",
     "httpx>=0.28",
     "pytest>=8.4",
+    "pytest-asyncio>=1.1",
     "pyyaml>=6.0",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
 
