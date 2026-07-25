@@ -1,0 +1,106 @@
+{
+  "total": 9,
+  "limit": 20,
+  "offset": 0,
+  "items": [
+    {
+      "id": "99999999-9999-4999-8999-999999999999",
+      "product_name": "Hayat Cooking Oil 1L",
+      "store_name": "Abebe Shop",
+      "price_etb": 120,
+      "source_type": "community",
+      "status": "pending",
+      "rejection_reason": "Price is 64.7% below the 340 ETB market estimate and needs verification.",
+      "observed_at": "$now-8m",
+      "created_at": "$now-7m"
+    },
+    {
+      "id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      "product_name": "Hayat Cooking Oil 1L",
+      "store_name": "Selam Mart",
+      "price_etb": 330,
+      "source_type": "receipt",
+      "status": "accepted",
+      "rejection_reason": null,
+      "observed_at": "$now-37m",
+      "created_at": "$now-36m"
+    },
+    {
+      "id": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+      "product_name": "Shega White Sugar 1kg",
+      "store_name": "Selam Mart",
+      "price_etb": 205,
+      "source_type": "receipt",
+      "status": "accepted",
+      "rejection_reason": null,
+      "observed_at": "$now-37m",
+      "created_at": "$now-36m"
+    },
+    {
+      "id": "a1b2c3d4-1111-4a11-8a11-111111111111",
+      "product_name": "Hayat Cooking Oil 1L",
+      "store_name": "Central Supermarket",
+      "price_etb": 4200,
+      "source_type": "community",
+      "status": "rejected",
+      "rejection_reason": "4200 ETB is outside the 90-3000 ETB range recorded for cooking oil sold by the litre.",
+      "observed_at": "$now-52m",
+      "created_at": "$now-51m"
+    },
+    {
+      "id": "a1b2c3d4-2222-4a22-8a22-222222222222",
+      "product_name": "Lifebuoy Soap 175g",
+      "store_name": "Abebe Shop",
+      "price_etb": 84,
+      "source_type": "shelf_photo",
+      "status": "accepted",
+      "rejection_reason": null,
+      "observed_at": "$now-2h",
+      "created_at": "$now-2h"
+    },
+    {
+      "id": "a1b2c3d4-3333-4a33-8a33-333333333333",
+      "product_name": "Shega White Sugar 1kg",
+      "store_name": null,
+      "price_etb": 199,
+      "source_type": "scrape",
+      "status": "accepted",
+      "rejection_reason": null,
+      "observed_at": "$now-3h",
+      "created_at": "$now-3h"
+    },
+    {
+      "id": "a1b2c3d4-4444-4a44-8a44-444444444444",
+      "product_name": "Lifebuoy Soap 175g",
+      "store_name": "Central Supermarket",
+      "price_etb": 138,
+      "source_type": "community",
+      "status": "pending",
+      "rejection_reason": "Price is 68.3% above the 82 ETB market estimate and needs verification.",
+      "observed_at": "$now-5h",
+      "created_at": "$now-5h"
+    },
+    {
+      "id": "a1b2c3d4-5555-4a55-8a55-555555555555",
+      "product_name": "Shega White Sugar 1kg",
+      "store_name": "Abebe Shop",
+      "price_etb": 620,
+      "source_type": "community",
+      "status": "rejected",
+      "rejection_reason": "Price is 202.4% above the 205 ETB market estimate, far beyond what verification can explain.",
+      "observed_at": "$now-9h",
+      "created_at": "$now-9h"
+    },
+    {
+      "id": "a1b2c3d4-6666-4a66-8a66-666666666666",
+      "product_name": "Hayat Cooking Oil 1L",
+      "store_name": "Selam Mart",
+      "price_etb": 338,
+      "source_type": "partner",
+      "status": "accepted",
+      "rejection_reason": null,
+      "observed_at": "$now-1d",
+      "created_at": "$now-1d"
+    }
+  ]
+}

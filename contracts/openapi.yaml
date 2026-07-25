@@ -210,6 +210,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/evidence:
+    get:
+      tags:
+      - evidence
+      summary: List Evidence
+      operationId: list_evidence_api_evidence_get
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - accepted
+            - pending
+            - rejected
+            type: string
+          - type: 'null'
+          description: Filter by the gate decision.
+          title: Status
+        description: Filter by the gate decision.
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Offset
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceLogResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/evidence/receipt:
     post:
       tags:
@@ -513,6 +564,90 @@ components:
       - status
       - reason
       title: EvidenceDecision
+    EvidenceLogItem:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        product_name:
+          type: string
+          title: Product Name
+        store_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Store Name
+        price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Price Etb
+        source_type:
+          type: string
+          enum:
+          - partner
+          - receipt
+          - scrape
+          - store_visit
+          - shelf_photo
+          - community
+          title: Source Type
+        status:
+          type: string
+          enum:
+          - accepted
+          - pending
+          - rejected
+          title: Status
+        rejection_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Rejection Reason
+        observed_at:
+          type: string
+          format: date-time
+          title: Observed At
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - id
+      - product_name
+      - price_etb
+      - source_type
+      - status
+      - observed_at
+      - created_at
+      title: EvidenceLogItem
+    EvidenceLogResponse:
+      properties:
+        total:
+          type: integer
+          minimum: 0.0
+          title: Total
+        limit:
+          type: integer
+          minimum: 1.0
+          title: Limit
+        offset:
+          type: integer
+          minimum: 0.0
+          title: Offset
+        items:
+          items:
+            $ref: '#/components/schemas/EvidenceLogItem'
+          type: array
+          title: Items
+      type: object
+      required:
+      - total
+      - limit
+      - offset
+      - items
+      title: EvidenceLogResponse
     ExtractedLineItem:
       properties:
         raw_text:

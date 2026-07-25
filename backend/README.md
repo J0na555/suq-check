@@ -40,10 +40,28 @@ alembic current
 ```
 
 The initial migration creates `pg_trgm`, the seven planned tables, constraints,
-and the trigram GIN index used for product-alias matching. `USE_FIXTURES=true`
-keeps all existing API routes on contract fixtures while the database layer is
-being built. Setting it to `false` will only be useful after the read
-repositories are implemented.
+and the trigram GIN index used for product-alias matching. The second seeds
+`category_price_bounds` for all fourteen categories, which the verification gate
+needs before it can reject anything. `USE_FIXTURES=true` keeps all existing API
+routes on contract fixtures while the database layer is being built. Setting it
+to `false` will only be useful after the read repositories are implemented.
+
+## Price engine and verification gate
+
+`app/services/price_engine.py` owns every number the API reports. Accepted
+evidence inside a 30-day window is weighted by source, OCR confidence, and a
+seven-day freshness half-life; the price is the weighted median, and confidence
+is a weighted blend of volume, agreement, freshness, and diversity, capped at 60
+when the newest evidence is stale. The sub-scores are persisted to
+`price_estimate.breakdown` in the same shape the product-detail response
+returns, so the app's why panel renders stored facts.
+
+`app/services/verification.py` gates incoming prices: outside
+`category_price_bounds` rejects, then deviation from a market estimate with
+confidence 60 or above decides accepted (under 40%), pending (40% to 150%), or
+rejected. Each branch produces the sentence shown in the ingestion log.
+`submit_evidence` writes the evidence row and recomputes the affected product
+inline when the gate accepts.
 
 ## Deploy
 

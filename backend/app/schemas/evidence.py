@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from app.schemas.common import Category, EvidenceStatus, SourceType
+from app.schemas.common import Category, EvidenceStatus, Pagination, SourceType
 
 
 class ExtractedLineItem(BaseModel):
@@ -64,6 +64,22 @@ class ManualEvidenceRequest(BaseModel):
 
 class ManualEvidenceResponse(BaseModel):
     decision: EvidenceDecision
+
+
+class EvidenceLogItem(BaseModel):
+    id: UUID
+    product_name: str
+    store_name: str | None = None
+    price_etb: float = Field(gt=0)
+    source_type: SourceType
+    status: EvidenceStatus
+    rejection_reason: str | None = None
+    observed_at: datetime
+    created_at: datetime
+
+
+class EvidenceLogResponse(Pagination):
+    items: list[EvidenceLogItem]
 
 
 class ProductIdentification(BaseModel):

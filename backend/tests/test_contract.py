@@ -127,10 +127,28 @@ def test_trends_contract() -> None:
     assert response.json()["period_days"] == 30
 
 
-def test_openapi_exposes_exactly_ten_product_endpoints_plus_health() -> None:
+def test_evidence_log_lists_every_gate_decision() -> None:
+    response = client.get("/api/evidence")
+
+    assert response.status_code == 200
+    statuses = {item["status"] for item in response.json()["items"]}
+    assert statuses == {"accepted", "pending", "rejected"}
+
+
+def test_evidence_log_filters_by_status() -> None:
+    response = client.get("/api/evidence", params={"status": "pending", "limit": 1})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 2
+    assert body["items"][0]["price_etb"] == 120
+    assert "needs verification" in body["items"][0]["rejection_reason"]
+
+
+def test_openapi_exposes_exactly_eleven_product_endpoints_plus_health() -> None:
     paths = app.openapi()["paths"]
 
     operation_count = sum(len(operations) for operations in paths.values())
-    assert operation_count == 11
+    assert operation_count == 12
     assert "/healthz" in paths
 

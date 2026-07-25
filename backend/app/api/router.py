@@ -7,8 +7,9 @@ from fastapi import APIRouter, File, Header, HTTPException, Query, UploadFile, s
 from app.config import get_settings
 from app.fixtures import load_fixture
 from app.schemas.analytics import TrendsResponse
-from app.schemas.common import Category, HealthResponse
+from app.schemas.common import Category, EvidenceStatus, HealthResponse
 from app.schemas.evidence import (
+    EvidenceLogResponse,
     ManualEvidenceRequest,
     ManualEvidenceResponse,
     ProductIdentification,
@@ -108,6 +109,29 @@ async def get_store(store_id: UUID) -> StoreDetail:
     if store_id != result.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Store not found")
     return result
+
+
+@router.get("/api/evidence", response_model=EvidenceLogResponse, tags=["evidence"])
+async def list_evidence(
+    evidence_status: Annotated[
+        EvidenceStatus | None,
+        Query(alias="status", description="Filter by the gate decision."),
+    ] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> EvidenceLogResponse:
+    fixture = EvidenceLogResponse.model_validate(load_fixture("evidence_log.json"))
+    items = fixture.items
+
+    if evidence_status:
+        items = [item for item in items if item.status == evidence_status]
+
+    return EvidenceLogResponse(
+        total=len(items),
+        limit=limit,
+        offset=offset,
+        items=items[offset : offset + limit],
+    )
 
 
 @router.post(

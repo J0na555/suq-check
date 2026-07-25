@@ -5,8 +5,8 @@ generated from the FastAPI/Pydantic schemas and must not be edited by hand.
 
 ## Current state
 
-All ten product operations plus `/healthz` are available from the fixture-backed
-API. The fixtures include:
+All eleven product operations plus `/healthz` are available from the
+fixture-backed API. The fixtures include:
 
 - a 98%-confidence cooking-oil product
 - a low-confidence soap product
@@ -14,6 +14,12 @@ API. The fixtures include:
 - receipt and shelf-photo extraction results
 - the 120 ETB pending-verification outlier
 - seven-day rising and falling price trends
+- an ingestion log mixing accepted, pending, and rejected evidence
+
+`GET /api/evidence?status=&limit=&offset=` backs the dashboard ingestion log:
+one row per evidence submission with its source and gate decision, newest
+first. Rows that the gate did not accept carry a human-readable
+`rejection_reason`.
 
 The backend will replace these fixtures with database queries one route at a
 time. Response shapes stay unchanged.
