@@ -87,7 +87,7 @@ export function OverviewDashboard() {
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <MetricCard
-              label="Verified today"
+              label="Verified (24h)"
               value={metrics.verified_prices_today.toLocaleString()}
               helper="Accepted price observations"
               icon={FileCheck2}
@@ -109,7 +109,7 @@ export function OverviewDashboard() {
             <MetricCard
               label="New receipts"
               value={metrics.new_receipts_today.toLocaleString()}
-              helper="Submitted today"
+              helper="Submitted in the last 24 hours"
               icon={ReceiptText}
               tone="amber"
             />

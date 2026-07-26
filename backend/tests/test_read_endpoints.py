@@ -5,9 +5,12 @@ the two files every response shape is exercised both ways.
 """
 
 from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.repositories.pulse import clear_cache, load_pulse
 from app.seed import read_products, read_stores
 from app.seed.catalog import Coverage, product_id, store_id
+from conftest import SEED_NOW
 
 PRODUCTS = {product.canonical_name: product for product in read_products()}
 STORES = {store.name: store for store in read_stores()}
@@ -209,13 +212,25 @@ def test_pulse_counts_the_market_it_can_see(database_client: TestClient) -> None
     metrics = body["metrics"]
     assert metrics["products_covered"] == len(PRODUCTS)
     assert metrics["stores_reporting"] > 0
-    assert metrics["verified_prices_today"] > 0
     assert 0 < metrics["average_confidence"] <= 100
     kinds = [mover["kind"] for mover in body["movers"]]
     assert "most_verified" in kinds
     assert len(kinds) == len(set(kinds))
     assert body["cheapest_district"] in {store.district for store in STORES.values()}
     assert body["most_active_store"] in STORES
+
+
+async def test_pulse_counts_recent_verified_activity(session: AsyncSession) -> None:
+    # Seed clock is frozen; assert against that instant so the 24h window does
+    # not depend on when the suite happens to run.
+    clear_cache()
+    try:
+        pulse = await load_pulse(session, now=SEED_NOW)
+    finally:
+        clear_cache()
+
+    assert pulse.metrics.verified_prices_today > 0
+    assert pulse.metrics.new_receipts_today > 0
 
 
 def test_pulse_movers_show_the_seeded_trends(database_client: TestClient) -> None:

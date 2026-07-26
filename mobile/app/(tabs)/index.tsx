@@ -59,7 +59,7 @@ export default function PulseScreen() {
       <Card>
         <SectionHeader title="Addis Ababa today" hint="Built from verified evidence only" />
         <View style={styles.tiles}>
-          <StatTile value={String(metrics.verified_prices_today)} label="Prices verified today" />
+          <StatTile value={String(metrics.verified_prices_today)} label="Prices verified (24h)" />
           <StatTile value={String(metrics.products_covered)} label="Products covered" />
           <StatTile value={String(metrics.stores_reporting)} label="Stores reporting" />
           <StatTile value={`${metrics.average_confidence}%`} label="Average confidence" />
@@ -112,7 +112,7 @@ export default function PulseScreen() {
         <View style={styles.signalPanel}>
           <KeyValue label="Cheapest district" value={cheapest_district} />
           <KeyValue label="Most active store" value={most_active_store} />
-          <KeyValue label="New receipts today" value={String(metrics.new_receipts_today)} />
+          <KeyValue label="New receipts (24h)" value={String(metrics.new_receipts_today)} />
         </View>
       </Card>
 

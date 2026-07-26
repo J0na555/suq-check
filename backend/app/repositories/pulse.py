@@ -25,6 +25,9 @@ from app.schemas.pulse import PulseMetrics, PulseMover, PulseResponse
 CACHE_SECONDS = 60
 MOVER_PERIOD_DAYS = 7
 REPORTING_WINDOW_DAYS = 30
+# Rolling window so a seed (or field day) that landed yesterday evening still
+# shows on the home screen after UTC midnight rolls over.
+RECENT_ACTIVITY_HOURS = 24
 UNKNOWN = "Not enough reports yet"
 
 MoverKind = Literal["fastest_rising", "largest_drop", "most_stable", "most_verified"]
@@ -66,14 +69,14 @@ async def _build_pulse(session: AsyncSession, *, now: datetime) -> PulseResponse
 
 
 async def _metrics(session: AsyncSession, *, now: datetime) -> PulseMetrics:
-    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    since = now - timedelta(hours=RECENT_ACTIVITY_HOURS)
 
     verified_today = await session.scalar(
         select(func.count())
         .select_from(Evidence)
         .where(
             Evidence.status == EvidenceStatus.ACCEPTED,
-            Evidence.observed_at >= midnight,
+            Evidence.observed_at >= since,
         )
     )
     new_receipts_today = await session.scalar(
@@ -81,7 +84,7 @@ async def _metrics(session: AsyncSession, *, now: datetime) -> PulseMetrics:
         .select_from(Evidence)
         .where(
             Evidence.source_type == EvidenceSource.RECEIPT,
-            Evidence.created_at >= midnight,
+            Evidence.created_at >= since,
         )
     )
     products_covered = await session.scalar(
