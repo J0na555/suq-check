@@ -7,6 +7,8 @@
  * the first request after an idle period can take most of a minute.
  */
 
+import { Platform } from 'react-native';
+
 import { deviceId } from './device';
 
 const DEPLOYED_BASE_URL = 'https://suq-check-api.onrender.com';
@@ -131,11 +133,26 @@ const EXTENSION_TYPES: Record<string, string> = {
   webp: 'image/webp',
 };
 
-function photoPart(photo: Photo): { uri: string; name: string; type: string } {
+function photoMeta(photo: Photo): { name: string; type: string } {
   const extension = photo.uri.split('.').pop()?.toLowerCase() ?? '';
   const type = photo.mimeType || EXTENSION_TYPES[extension] || 'image/jpeg';
   const name = photo.fileName || `upload.${type === 'image/png' ? 'png' : 'jpg'}`;
-  return { uri: photo.uri, name, type };
+  return { name, type };
+}
+
+/**
+ * On native, FormData accepts `{ uri, name, type }`. On web, that object is
+ * coerced to the string "[object Object]", so FastAPI gets a str instead of a
+ * file — fetch the uri into a Blob (or File) and append that instead.
+ */
+async function appendImage(form: FormData, photo: Photo): Promise<void> {
+  const { name, type } = photoMeta(photo);
+  if (Platform.OS === 'web') {
+    const blob = await fetch(photo.uri).then((r) => r.blob());
+    form.append('image', new File([blob], name, { type: blob.type || type }));
+    return;
+  }
+  form.append('image', { uri: photo.uri, name, type } as unknown as Blob);
 }
 
 /**
@@ -149,8 +166,7 @@ export async function postImage<Result>(
   fields: Record<string, string> = {},
 ): Promise<Result> {
   const form = new FormData();
-  // React Native's FormData takes this shape rather than a Blob.
-  form.append('image', photoPart(photo) as unknown as Blob);
+  await appendImage(form, photo);
   for (const [name, value] of Object.entries(fields)) {
     form.append(name, value);
   }
