@@ -65,6 +65,34 @@ Open http://localhost:3000. Set `NEXT_PUBLIC_API_URL` to the API base URL (no tr
 
 Details: [`dashboard/README.md`](dashboard/README.md)
 
+## Try it / demo
+
+You do not need an App Store or Play Store listing to let people use the product.
+
+| Surface | How to share |
+| --- | --- |
+| Dashboard | Open [suq-check.vercel.app](https://suq-check.vercel.app/) in any browser |
+| Mobile (usual path) | Expo Go — install from the store, scan the QR from `npm start` in `mobile/` |
+| API | [suq-check-api.onrender.com](https://suq-check-api.onrender.com) (docs at `/docs`) |
+
+### Mobile with Expo Go
+
+The app targets **Expo SDK 54** so stock Expo Go from the Play Store / App Store can open it. It already points at the deployed API, so testers need no env setup.
+
+```bash
+cd mobile
+npm install
+npm start
+```
+
+Share the QR. Use a tunnel (`n` in the Expo CLI, or `npx expo start --tunnel`) when phones are not on the same Wi‑Fi. Camera and location need a real device; `npm run web` is fine for layout only.
+
+Before a live demo, hit `https://suq-check-api.onrender.com/healthz` once so the free Render instance is awake (cold start ~50s).
+
+### Installable builds later
+
+For a downloadable app without Expo Go, use [EAS Build](https://docs.expo.dev/build/introduction/) for an Android APK / internal link, or TestFlight on iOS (Apple Developer account required). Full store release is possible (`com.suqcheck.app` in `mobile/app.json`) but slower; Expo Go or an EAS internal build is enough for demos and early testers.
+
 ## Shared contract
 
 After backend schema changes:
