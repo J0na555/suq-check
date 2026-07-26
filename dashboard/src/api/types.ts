@@ -191,6 +191,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/evidence/oos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit Oos Evidence */
+        post: operations["submit_oos_evidence_api_evidence_oos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/scan/identify": {
         parameters: {
             query?: never;
@@ -242,6 +259,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/analytics/compliance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Compliance */
+        get: operations["get_compliance_api_analytics_compliance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/analytics/districts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Districts */
+        get: operations["get_districts_api_analytics_districts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/analytics/oos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Oos Alerts */
+        get: operations["get_oos_alerts_api_analytics_oos_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/analytics/competitors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Competitors */
+        get: operations["get_competitors_api_analytics_competitors_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/exports/market-insights.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Market Insights */
+        get: operations["export_market_insights_api_exports_market_insights_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -283,6 +385,108 @@ export interface components {
              * @description JPEG, PNG, or WebP shelf photo.
              */
             image: string;
+        };
+        /** CompetitorRow */
+        CompetitorRow: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Product Name */
+            product_name: string;
+            /** Brand */
+            brand: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "cooking_oil" | "sugar" | "rice" | "flour" | "salt" | "pasta" | "coffee" | "tea" | "milk" | "soap" | "detergent" | "toothpaste" | "shampoo" | "bottled_water";
+            /** Market Price Etb */
+            market_price_etb: number;
+            /** Mrp Etb */
+            mrp_etb?: number | null;
+            /** Vs Category Median Pct */
+            vs_category_median_pct: number;
+            /** Change Pct */
+            change_pct: number;
+            /**
+             * Direction
+             * @enum {string}
+             */
+            direction: "up" | "down" | "stable";
+            /** Store Count */
+            store_count: number;
+            /** Confidence */
+            confidence: number;
+        };
+        /** CompetitorsResponse */
+        CompetitorsResponse: {
+            /** Category */
+            category?: ("cooking_oil" | "sugar" | "rice" | "flour" | "salt" | "pasta" | "coffee" | "tea" | "milk" | "soap" | "detergent" | "toothpaste" | "shampoo" | "bottled_water") | null;
+            /** Category Median Etb */
+            category_median_etb?: number | null;
+            /** Items */
+            items: components["schemas"]["CompetitorRow"][];
+        };
+        /** ComplianceResponse */
+        ComplianceResponse: {
+            summary: components["schemas"]["ComplianceSummary"];
+            /** Items */
+            items: components["schemas"]["ComplianceRow"][];
+        };
+        /** ComplianceRow */
+        ComplianceRow: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Product Name */
+            product_name: string;
+            /** Brand */
+            brand: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "cooking_oil" | "sugar" | "rice" | "flour" | "salt" | "pasta" | "coffee" | "tea" | "milk" | "soap" | "detergent" | "toothpaste" | "shampoo" | "bottled_water";
+            /** Mrp Etb */
+            mrp_etb: number;
+            /** Market Price Etb */
+            market_price_etb: number;
+            /** Delta Pct */
+            delta_pct: number;
+            /**
+             * Band
+             * @enum {string}
+             */
+            band: "at" | "above" | "below";
+            /** Store Count */
+            store_count: number;
+            /** At Mrp */
+            at_mrp: number;
+            /** Above Mrp */
+            above_mrp: number;
+            /** Below Mrp */
+            below_mrp: number;
+        };
+        /** ComplianceSummary */
+        ComplianceSummary: {
+            /** Shops Priced */
+            shops_priced: number;
+            /** At Mrp */
+            at_mrp: number;
+            /** Above Mrp */
+            above_mrp: number;
+            /** Below Mrp */
+            below_mrp: number;
+            /** At Pct */
+            at_pct: number;
+            /** Above Pct */
+            above_pct: number;
+            /** Below Pct */
+            below_pct: number;
         };
         /** ConfidenceBreakdown */
         ConfidenceBreakdown: {
@@ -335,6 +539,30 @@ export interface components {
             /** Source */
             source: string;
         };
+        /** DistrictRow */
+        DistrictRow: {
+            /** District */
+            district: string;
+            /** Avg Price Etb */
+            avg_price_etb: number;
+            /** Avg Mrp Etb */
+            avg_mrp_etb?: number | null;
+            /** Vs Mrp Pct */
+            vs_mrp_pct?: number | null;
+            /** Priced Cells */
+            priced_cells: number;
+            /** Oos Cells */
+            oos_cells: number;
+            /** Oos Rate Pct */
+            oos_rate_pct: number;
+            /** At Mrp Pct */
+            at_mrp_pct?: number | null;
+        };
+        /** DistrictsResponse */
+        DistrictsResponse: {
+            /** Items */
+            items: components["schemas"]["DistrictRow"][];
+        };
         /**
          * ErrorResponse
          * @description Every error this API returns, including 429, has this body.
@@ -355,7 +583,12 @@ export interface components {
             /** Product Name */
             product_name: string;
             /** Price Etb */
-            price_etb: number;
+            price_etb?: number | null;
+            /**
+             * Is Oos
+             * @default false
+             */
+            is_oos: boolean;
             /**
              * Source Type
              * @enum {string}
@@ -381,7 +614,12 @@ export interface components {
             /** Store Name */
             store_name?: string | null;
             /** Price Etb */
-            price_etb: number;
+            price_etb?: number | null;
+            /**
+             * Is Oos
+             * @default false
+             */
+            is_oos: boolean;
             /**
              * Source Type
              * @enum {string}
@@ -549,6 +787,78 @@ export interface components {
             /** Items */
             items: components["schemas"]["NearbyStorePrice"][];
         };
+        /** OosAlert */
+        OosAlert: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Product Name */
+            product_name: string;
+            /** Brand */
+            brand: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "cooking_oil" | "sugar" | "rice" | "flour" | "salt" | "pasta" | "coffee" | "tea" | "milk" | "soap" | "detergent" | "toothpaste" | "shampoo" | "bottled_water";
+            /** Store Id */
+            store_id?: string | null;
+            /** Store Name */
+            store_name?: string | null;
+            /** District */
+            district?: string | null;
+            /**
+             * Observed At
+             * Format: date-time
+             */
+            observed_at: string;
+            /** Source Type */
+            source_type: string;
+        };
+        /** OosEvidenceRequest */
+        OosEvidenceRequest: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Store Id
+             * Format: uuid
+             */
+            store_id: string;
+            /**
+             * Observed At
+             * Format: date-time
+             */
+            observed_at: string;
+            /**
+             * Source Type
+             * @default store_visit
+             * @enum {string}
+             */
+            source_type: "store_visit" | "community" | "shelf_photo";
+        };
+        /** OosEvidenceResponse */
+        OosEvidenceResponse: {
+            decision: components["schemas"]["EvidenceDecision"];
+        };
+        /** OosResponse */
+        OosResponse: {
+            /** Period Days */
+            period_days: number;
+            /** Total */
+            total: number;
+            /** Items */
+            items: components["schemas"]["OosAlert"][];
+        };
         /** PriceListExtraction */
         PriceListExtraction: {
             /**
@@ -591,6 +901,8 @@ export interface components {
             size_label: string;
             /** Market Price Etb */
             market_price_etb: number;
+            /** Mrp Etb */
+            mrp_etb?: number | null;
             /** Confidence */
             confidence: number;
             /**
@@ -683,6 +995,8 @@ export interface components {
             size_label: string;
             /** Market Price Etb */
             market_price_etb: number;
+            /** Mrp Etb */
+            mrp_etb?: number | null;
             /** Confidence */
             confidence: number;
             /**
@@ -724,6 +1038,14 @@ export interface components {
             new_receipts_today: number;
             /** Average Confidence */
             average_confidence: number;
+            /** Mrp Compliance Pct */
+            mrp_compliance_pct: number;
+            /** Oos Rate Pct */
+            oos_rate_pct: number;
+            /** Categories Covered */
+            categories_covered: number;
+            /** Active Oos Alerts */
+            active_oos_alerts: number;
         };
         /** PulseMover */
         PulseMover: {
@@ -977,6 +1299,7 @@ export interface operations {
             query?: {
                 q?: string | null;
                 category?: ("cooking_oil" | "sugar" | "rice" | "flour" | "salt" | "pasta" | "coffee" | "tea" | "milk" | "soap" | "detergent" | "toothpaste" | "shampoo" | "bottled_water") | null;
+                brand?: string | null;
                 limit?: number;
                 offset?: number;
             };
@@ -1452,6 +1775,60 @@ export interface operations {
             };
         };
     };
+    submit_oos_evidence_api_evidence_oos_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Anonymous device identifier used for rate limiting. */
+                "X-Device-Id"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OosEvidenceRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OosEvidenceResponse"];
+                };
+            };
+            /** @description The report names a product or store that does not exist. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description The per-device or per-network upload limit was reached. The `Retry-After` header carries the wait in seconds. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     identify_product_api_scan_identify_post: {
         parameters: {
             query?: never;
@@ -1528,6 +1905,7 @@ export interface operations {
         parameters: {
             query?: {
                 period_days?: number;
+                category?: ("cooking_oil" | "sugar" | "rice" | "flour" | "salt" | "pasta" | "coffee" | "tea" | "milk" | "soap" | "detergent" | "toothpaste" | "shampoo" | "bottled_water") | null;
             };
             header?: never;
             path?: never;
@@ -1573,6 +1951,166 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UnitEconomicsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_compliance_api_analytics_compliance_get: {
+        parameters: {
+            query?: {
+                category?: ("cooking_oil" | "sugar" | "rice" | "flour" | "salt" | "pasta" | "coffee" | "tea" | "milk" | "soap" | "detergent" | "toothpaste" | "shampoo" | "bottled_water") | null;
+                brand?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComplianceResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_districts_api_analytics_districts_get: {
+        parameters: {
+            query?: {
+                category?: ("cooking_oil" | "sugar" | "rice" | "flour" | "salt" | "pasta" | "coffee" | "tea" | "milk" | "soap" | "detergent" | "toothpaste" | "shampoo" | "bottled_water") | null;
+                product_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DistrictsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_oos_alerts_api_analytics_oos_get: {
+        parameters: {
+            query?: {
+                category?: ("cooking_oil" | "sugar" | "rice" | "flour" | "salt" | "pasta" | "coffee" | "tea" | "milk" | "soap" | "detergent" | "toothpaste" | "shampoo" | "bottled_water") | null;
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OosResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_competitors_api_analytics_competitors_get: {
+        parameters: {
+            query?: {
+                category?: ("cooking_oil" | "sugar" | "rice" | "flour" | "salt" | "pasta" | "coffee" | "tea" | "milk" | "soap" | "detergent" | "toothpaste" | "shampoo" | "bottled_water") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompetitorsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_market_insights_api_exports_market_insights_csv_get: {
+        parameters: {
+            query?: {
+                category?: ("cooking_oil" | "sugar" | "rice" | "flour" | "salt" | "pasta" | "coffee" | "tea" | "milk" | "soap" | "detergent" | "toothpaste" | "shampoo" | "bottled_water") | null;
+                brand?: string | null;
+                level?: "district" | "store";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

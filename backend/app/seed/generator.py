@@ -75,10 +75,15 @@ PROFILES: dict[Coverage, CoverageProfile] = {
 class GeneratedEvidence:
     product_id: UUID
     store: StoreRow
-    price_etb: float
+    price_etb: float | None
     source_type: EvidenceSource
     ocr_confidence: float
     observed_at: datetime
+    is_oos: bool = False
+
+# ~12 OOS flags per shop per week alongside ~28 priced SKUs.
+OOS_PER_VISIT = 12
+OOS_WEEKS = 4
 
 
 def _report_count(rate: float, rng: Random) -> int:
@@ -242,4 +247,42 @@ def generate_store_visit_evidence(
                     )
                 )
 
+    return generated
+
+
+def generate_oos_evidence(
+    products: Sequence[ProductRow],
+    stores: Sequence[StoreRow],
+    *,
+    now: datetime,
+    days: int = SEED_DAYS,
+    weeks: int = OOS_WEEKS,
+) -> list[GeneratedEvidence]:
+    """Mark SKUs missing from the shelf during recent ambassador visits."""
+    if not products or not stores:
+        return []
+
+    physical = [store for store in stores if store.kind is not StoreKind.ONLINE]
+    generated: list[GeneratedEvidence] = []
+    for store in physical:
+        rng = Random(f"oos:{store.id}")
+        weekday = rng.randrange(VISIT_INTERVAL_DAYS)
+        for week in range(weeks):
+            age_days = weekday + week * VISIT_INTERVAL_DAYS
+            if age_days >= days:
+                break
+            observed = _observed_at(now, age_days, rng)
+            missing = rng.sample(list(products), min(OOS_PER_VISIT, len(products)))
+            for product in missing:
+                generated.append(
+                    GeneratedEvidence(
+                        product_id=product.id,
+                        store=store,
+                        price_etb=None,
+                        source_type=EvidenceSource.STORE_VISIT,
+                        ocr_confidence=1.0,
+                        observed_at=observed,
+                        is_oos=True,
+                    )
+                )
     return generated

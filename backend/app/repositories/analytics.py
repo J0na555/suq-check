@@ -24,7 +24,7 @@ from app.costing import (
     gemini_cost_usd,
     usd_to_etb,
 )
-from app.models.enums import EvidenceStatus
+from app.models.enums import EvidenceStatus, ProductCategory
 from app.models.evidence import Evidence
 from app.models.price import PriceHistory
 from app.models.product import Product
@@ -88,13 +88,17 @@ async def price_changes(
     *,
     period_days: int,
     now: datetime | None = None,
+    category: str | None = None,
 ) -> list[PriceChange]:
     """One entry per product with at least two priced days in the window."""
     moment = now or datetime.now(timezone.utc)
+    filters = [PriceHistory.day >= (moment - timedelta(days=period_days)).date()]
+    if category:
+        filters.append(Product.category == ProductCategory(category))
     rows = await session.execute(
         select(Product.id, Product.canonical_name, PriceHistory.day, PriceHistory.price_etb)
         .join(PriceHistory, PriceHistory.product_id == Product.id)
-        .where(PriceHistory.day >= (moment - timedelta(days=period_days)).date())
+        .where(*filters)
         .order_by(Product.canonical_name, PriceHistory.day)
     )
 
@@ -124,9 +128,15 @@ async def load_trends(
     *,
     period_days: int,
     now: datetime | None = None,
+    category: str | None = None,
     limit: int = TREND_LIMIT,
 ) -> TrendsResponse:
-    changes = await price_changes(session, period_days=period_days, now=now)
+    changes = await price_changes(
+        session,
+        period_days=period_days,
+        now=now,
+        category=category,
+    )
     moved_most = sorted(changes, key=lambda change: abs(change.change_pct), reverse=True)
     return TrendsResponse(
         period_days=period_days,

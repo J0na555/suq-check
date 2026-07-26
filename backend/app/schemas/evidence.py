@@ -38,7 +38,8 @@ class EvidenceDecision(BaseModel):
     id: UUID
     product_id: UUID | None = None
     product_name: str
-    price_etb: float = Field(gt=0)
+    price_etb: float | None = Field(default=None, gt=0)
+    is_oos: bool = False
     source_type: SourceType
     status: EvidenceStatus
     reason: str
@@ -79,11 +80,23 @@ class ManualEvidenceResponse(BaseModel):
     decision: EvidenceDecision
 
 
+class OosEvidenceRequest(BaseModel):
+    product_id: UUID
+    store_id: UUID
+    observed_at: datetime
+    source_type: Literal["store_visit", "community", "shelf_photo"] = "store_visit"
+
+
+class OosEvidenceResponse(BaseModel):
+    decision: EvidenceDecision
+
+
 class EvidenceLogItem(BaseModel):
     id: UUID
     product_name: str
     store_name: str | None = None
-    price_etb: float = Field(gt=0)
+    price_etb: float | None = Field(default=None, gt=0)
+    is_oos: bool = False
     source_type: SourceType
     status: EvidenceStatus
     rejection_reason: str | None = None

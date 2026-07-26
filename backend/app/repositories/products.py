@@ -60,12 +60,15 @@ async def search_products(
     *,
     query: str | None = None,
     category: str | None = None,
+    brand: str | None = None,
     limit: int = 20,
     offset: int = 0,
 ) -> ProductListResponse:
     filters: list[ColumnElement[bool]] = []
     if category:
         filters.append(Product.category == ProductCategory(category))
+    if brand:
+        filters.append(Product.brand.ilike(brand.strip()))
     if query:
         pattern = f"%{query.strip()}%"
         filters.append(or_(Product.canonical_name.ilike(pattern), Product.brand.ilike(pattern)))
@@ -194,6 +197,7 @@ async def _sources(
         .where(
             Evidence.product_id == product_id,
             Evidence.status == EvidenceStatus.ACCEPTED,
+            Evidence.is_oos.is_(False),
             Evidence.observed_at > now - timedelta(days=LOOKBACK_DAYS),
         )
         .group_by(Evidence.source_type)

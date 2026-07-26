@@ -10,11 +10,11 @@ const geistSans = Geist({
 
 export const metadata: Metadata = {
   title: {
-    default: "SuqCheck Market Intelligence",
+    default: "SuqCheck Market Insights",
     template: "%s | SuqCheck",
   },
   description:
-    "Live evidence, price trends, and market confidence for essential products in Addis Ababa.",
+    "Real-time market data for brands — MRP compliance, competitor pricing, district analysis, and out-of-stock alerts across Addis Ababa staples.",
 };
 
 export default function RootLayout({

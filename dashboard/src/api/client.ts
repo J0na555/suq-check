@@ -7,6 +7,14 @@ export type TrendsResponse = components["schemas"]["TrendsResponse"];
 export type ProductTrend = components["schemas"]["ProductTrend"];
 export type UnitEconomicsResponse =
   components["schemas"]["UnitEconomicsResponse"];
+export type ProductListResponse = components["schemas"]["ProductListResponse"];
+export type ProductDetail = components["schemas"]["ProductDetail"];
+export type NearbyStoresResponse =
+  components["schemas"]["NearbyStoresResponse"];
+export type ComplianceResponse = components["schemas"]["ComplianceResponse"];
+export type DistrictsResponse = components["schemas"]["DistrictsResponse"];
+export type OosResponse = components["schemas"]["OosResponse"];
+export type CompetitorsResponse = components["schemas"]["CompetitorsResponse"];
 
 export const API_URL = (
   process.env.NEXT_PUBLIC_API_URL ?? "https://suq-check-api.onrender.com"
@@ -39,8 +47,24 @@ export async function apiFetch<T>(
     } catch {
       // The status code still gives the user an actionable error.
     }
+    if (response.status === 404) {
+      message = `${message} Market Insights routes need the local API (USE_FIXTURES=true on :8000) or a redeployed backend — production may not have them yet.`;
+    }
     throw new ApiError(message, response.status);
   }
 
   return (await response.json()) as T;
+}
+
+export function exportUrl(params: {
+  category?: string;
+  brand?: string;
+  level?: "district" | "store";
+}) {
+  const query = new URLSearchParams();
+  if (params.category) query.set("category", params.category);
+  if (params.brand) query.set("brand", params.brand);
+  if (params.level) query.set("level", params.level);
+  const suffix = query.toString() ? `?${query}` : "";
+  return `${API_URL}/api/exports/market-insights.csv${suffix}`;
 }

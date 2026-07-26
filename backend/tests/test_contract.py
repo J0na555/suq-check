@@ -180,14 +180,20 @@ def test_evidence_log_filters_by_status() -> None:
     assert "needs verification" in body["items"][0]["rejection_reason"]
 
 
-def test_openapi_exposes_exactly_twelve_product_endpoints_plus_health() -> None:
+def test_openapi_exposes_market_insights_surface() -> None:
     paths = app.openapi()["paths"]
 
     operation_count = sum(len(operations) for operations in paths.values())
-    assert operation_count == 14
+    assert operation_count == 20
     assert "/healthz" in paths
     assert "/api/evidence/price-list" in paths
+    assert "/api/evidence/oos" in paths
     assert "/api/analytics/unit-economics" in paths
+    assert "/api/analytics/compliance" in paths
+    assert "/api/analytics/districts" in paths
+    assert "/api/analytics/oos" in paths
+    assert "/api/analytics/competitors" in paths
+    assert "/api/exports/market-insights.csv" in paths
 
 
 def documented_errors() -> set[tuple[str, str]]:

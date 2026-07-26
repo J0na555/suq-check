@@ -12,7 +12,8 @@
       "status": "pending",
       "rejection_reason": "Price is 64.7% below the 340 ETB market estimate and needs verification.",
       "observed_at": "$now-8m",
-      "created_at": "$now-7m"
+      "created_at": "$now-7m",
+      "is_oos": false
     },
     {
       "id": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
@@ -23,7 +24,8 @@
       "status": "accepted",
       "rejection_reason": null,
       "observed_at": "$now-37m",
-      "created_at": "$now-36m"
+      "created_at": "$now-36m",
+      "is_oos": false
     },
     {
       "id": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
@@ -34,7 +36,8 @@
       "status": "accepted",
       "rejection_reason": null,
       "observed_at": "$now-37m",
-      "created_at": "$now-36m"
+      "created_at": "$now-36m",
+      "is_oos": false
     },
     {
       "id": "a1b2c3d4-1111-4a11-8a11-111111111111",
@@ -45,7 +48,8 @@
       "status": "rejected",
       "rejection_reason": "4200 ETB is outside the 90-3000 ETB range recorded for cooking oil sold by the litre.",
       "observed_at": "$now-52m",
-      "created_at": "$now-51m"
+      "created_at": "$now-51m",
+      "is_oos": false
     },
     {
       "id": "a1b2c3d4-2222-4a22-8a22-222222222222",
@@ -56,7 +60,8 @@
       "status": "accepted",
       "rejection_reason": null,
       "observed_at": "$now-2h",
-      "created_at": "$now-2h"
+      "created_at": "$now-2h",
+      "is_oos": false
     },
     {
       "id": "a1b2c3d4-3333-4a33-8a33-333333333333",
@@ -67,7 +72,8 @@
       "status": "accepted",
       "rejection_reason": null,
       "observed_at": "$now-3h",
-      "created_at": "$now-3h"
+      "created_at": "$now-3h",
+      "is_oos": false
     },
     {
       "id": "a1b2c3d4-4444-4a44-8a44-444444444444",
@@ -78,7 +84,8 @@
       "status": "pending",
       "rejection_reason": "Price is 68.3% above the 82 ETB market estimate and needs verification.",
       "observed_at": "$now-5h",
-      "created_at": "$now-5h"
+      "created_at": "$now-5h",
+      "is_oos": false
     },
     {
       "id": "a1b2c3d4-5555-4a55-8a55-555555555555",
@@ -89,7 +96,8 @@
       "status": "rejected",
       "rejection_reason": "Price is 202.4% above the 205 ETB market estimate, far beyond what verification can explain.",
       "observed_at": "$now-9h",
-      "created_at": "$now-9h"
+      "created_at": "$now-9h",
+      "is_oos": false
     },
     {
       "id": "a1b2c3d4-6666-4a66-8a66-666666666666",
@@ -100,7 +108,8 @@
       "status": "accepted",
       "rejection_reason": null,
       "observed_at": "$now-1d",
-      "created_at": "$now-1d"
+      "created_at": "$now-1d",
+      "is_oos": false
     }
   ]
 }

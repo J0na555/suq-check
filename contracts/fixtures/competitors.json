@@ -1,0 +1,32 @@
+{
+  "category": "cooking_oil",
+  "category_median_etb": 355,
+  "items": [
+    {
+      "product_id": "11111111-1111-4111-8111-111111111111",
+      "product_name": "Hayat Cooking Oil 1L",
+      "brand": "Hayat",
+      "category": "cooking_oil",
+      "market_price_etb": 340,
+      "mrp_etb": 340,
+      "vs_category_median_pct": -4.2,
+      "change_pct": 5.2,
+      "direction": "up",
+      "store_count": 18,
+      "confidence": 98
+    },
+    {
+      "product_id": "66666666-6666-4666-8666-666666666666",
+      "product_name": "Tena Sunflower Oil 1L",
+      "brand": "Tena",
+      "category": "cooking_oil",
+      "market_price_etb": 368,
+      "mrp_etb": 355,
+      "vs_category_median_pct": 3.7,
+      "change_pct": 4.1,
+      "direction": "up",
+      "store_count": 16,
+      "confidence": 93
+    }
+  ]
+}

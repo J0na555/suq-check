@@ -2,7 +2,9 @@
 
 import {
   apiFetch,
-  type EvidenceLogResponse,
+  type CompetitorsResponse,
+  type ComplianceResponse,
+  type OosResponse,
   type PulseResponse,
   type TrendsResponse,
 } from "@/api/client";
@@ -15,17 +17,18 @@ import {
   MetricCard,
   PageHeader,
   RefreshButton,
-  StatusBadge,
 } from "@/components/ui";
 import { useLiveData } from "@/hooks/use-live-data";
+import { categoryLabel, formatEtb, formatPct } from "@/lib/categories";
 import {
+  AlertTriangle,
   ArrowDownRight,
   ArrowUpRight,
   Boxes,
-  FileCheck2,
   MapPin,
-  ReceiptText,
-  ShieldCheck,
+  Package,
+  Percent,
+  Scale,
   Store,
 } from "lucide-react";
 import Link from "next/link";
@@ -34,7 +37,9 @@ import { useCallback } from "react";
 type OverviewData = {
   pulse: PulseResponse;
   trends: TrendsResponse;
-  evidence: EvidenceLogResponse;
+  compliance: ComplianceResponse;
+  competitors: CompetitorsResponse;
+  oos: OosResponse;
 };
 
 function relativeTime(value: string) {
@@ -48,26 +53,25 @@ function relativeTime(value: string) {
 }
 
 export function OverviewDashboard() {
-  const loader = useCallback(
-    async (signal: AbortSignal): Promise<OverviewData> => {
-      const [pulse, trends, evidence] = await Promise.all([
-        apiFetch<PulseResponse>("/api/pulse", signal),
-        apiFetch<TrendsResponse>("/api/analytics/trends?period_days=7", signal),
-        apiFetch<EvidenceLogResponse>("/api/evidence?limit=6&offset=0", signal),
-      ]);
-      return { pulse, trends, evidence };
-    },
-    [],
-  );
+  const loader = useCallback(async (signal: AbortSignal): Promise<OverviewData> => {
+    const [pulse, trends, compliance, competitors, oos] = await Promise.all([
+      apiFetch<PulseResponse>("/api/pulse", signal),
+      apiFetch<TrendsResponse>("/api/analytics/trends?period_days=7", signal),
+      apiFetch<ComplianceResponse>("/api/analytics/compliance", signal),
+      apiFetch<CompetitorsResponse>("/api/analytics/competitors", signal),
+      apiFetch<OosResponse>("/api/analytics/oos?days=7", signal),
+    ]);
+    return { pulse, trends, compliance, competitors, oos };
+  }, []);
   const state = useLiveData(loader, 60_000);
   const metrics = state.data?.pulse.metrics;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Business intelligence"
-        title="Market overview"
-        description="A live view of essential-product coverage, price movement, and evidence quality across the SuqCheck network."
+        eyebrow="Market Insights"
+        title="Brand market overview"
+        description="Real-time pricing, MRP compliance, competitor movement, and out-of-stock signals across Addis staples — built for businesses that price from evidence."
         actions={
           <RefreshButton
             refreshing={state.isRefreshing}
@@ -87,15 +91,29 @@ export function OverviewDashboard() {
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <MetricCard
-              label="Verified (24h)"
-              value={metrics.verified_prices_today.toLocaleString()}
-              helper="Accepted price observations"
-              icon={FileCheck2}
+              label="MRP compliance"
+              value={`${metrics.mrp_compliance_pct}%`}
+              helper="Shops priced at manufacturer MRP"
+              icon={Scale}
             />
             <MetricCard
-              label="Products covered"
-              value={metrics.products_covered.toLocaleString()}
-              helper="Essential packaged SKUs"
+              label="OOS rate"
+              value={`${metrics.oos_rate_pct}%`}
+              helper="Resolved cells marked out of stock"
+              icon={AlertTriangle}
+              tone="amber"
+            />
+            <MetricCard
+              label="Active OOS alerts"
+              value={metrics.active_oos_alerts.toLocaleString()}
+              helper="Last 7 days"
+              icon={Package}
+              tone="violet"
+            />
+            <MetricCard
+              label="Categories covered"
+              value={metrics.categories_covered.toLocaleString()}
+              helper="Live staples panel"
               icon={Boxes}
               tone="blue"
             />
@@ -104,20 +122,6 @@ export function OverviewDashboard() {
               value={metrics.stores_reporting.toLocaleString()}
               helper="Active retail locations"
               icon={Store}
-              tone="violet"
-            />
-            <MetricCard
-              label="New receipts"
-              value={metrics.new_receipts_today.toLocaleString()}
-              helper="Submitted in the last 24 hours"
-              icon={ReceiptText}
-              tone="amber"
-            />
-            <MetricCard
-              label="Avg. confidence"
-              value={`${metrics.average_confidence}%`}
-              helper="Across current estimates"
-              icon={ShieldCheck}
             />
           </div>
 
@@ -203,75 +207,106 @@ export function OverviewDashboard() {
                 </div>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Most active
+                    Compliance mix
                   </p>
-                  <p className="mt-1 flex items-center gap-1.5 truncate text-sm font-semibold text-slate-800">
-                    <Store size={14} className="text-brand" />
-                    {state.data.pulse.most_active_store}
+                  <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-slate-800">
+                    <Percent size={14} className="text-brand" />
+                    {state.data.compliance.summary.above_pct}% above MRP
                   </p>
                 </div>
               </div>
             </Card>
           </div>
 
-          <Card>
-            <CardHeader
-              title="Latest evidence decisions"
-              description="The newest observations and their verification outcome"
-              aside={
-                <Link
-                  href="/evidence"
-                  className="text-xs font-semibold text-brand hover:text-brand-dark"
-                >
-                  View ingestion log
-                </Link>
-              }
-            />
-            {state.data.evidence.items.length ? (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[760px] text-left text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-100 bg-slate-50/60 text-[10px] uppercase tracking-wider text-slate-400">
-                      <th className="px-5 py-3 font-bold">Product</th>
-                      <th className="px-5 py-3 font-bold">Store</th>
-                      <th className="px-5 py-3 font-bold">Source</th>
-                      <th className="px-5 py-3 font-bold">Price</th>
-                      <th className="px-5 py-3 font-bold">Decision</th>
-                      <th className="px-5 py-3 text-right font-bold">Observed</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {state.data.evidence.items.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/60">
-                        <td className="px-5 py-3.5 font-semibold text-slate-800">
-                          {item.product_name}
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-500">
-                          {item.store_name ?? "Market-wide"}
-                        </td>
-                        <td className="px-5 py-3.5 capitalize text-slate-500">
-                          {item.source_type.replaceAll("_", " ")}
-                        </td>
-                        <td className="px-5 py-3.5 font-semibold text-slate-700">
-                          {item.price_etb.toLocaleString()} ETB
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <StatusBadge status={item.status} />
-                        </td>
-                        <td className="px-5 py-3.5 text-right text-slate-400">
-                          {relativeTime(item.observed_at)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          <div className="grid gap-4 xl:grid-cols-2">
+            <Card>
+              <CardHeader
+                title="Competitor snapshot"
+                description="SKUs farthest from the category median"
+                aside={
+                  <Link
+                    href="/products"
+                    className="text-xs font-semibold text-brand hover:text-brand-dark"
+                  >
+                    Browse products
+                  </Link>
+                }
+              />
+              <div className="divide-y divide-slate-100">
+                {state.data.competitors.items.slice(0, 5).map((item) => (
+                  <Link
+                    key={item.product_id}
+                    href={`/products/${item.product_id}`}
+                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50/80"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-slate-800">
+                        {item.product_name}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-slate-400">
+                        {item.brand} · {categoryLabel(item.category)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-slate-800">
+                        {formatEtb(item.market_price_etb)}
+                      </p>
+                      <p
+                        className={`text-[11px] font-semibold ${
+                          item.vs_category_median_pct > 0
+                            ? "text-red-600"
+                            : "text-brand"
+                        }`}
+                      >
+                        {formatPct(item.vs_category_median_pct)} vs median
+                      </p>
+                    </div>
+                  </Link>
+                ))}
               </div>
-            ) : (
-              <p className="p-10 text-center text-sm text-slate-400">
-                No evidence has been submitted yet.
-              </p>
-            )}
-          </Card>
+            </Card>
+
+            <Card>
+              <CardHeader
+                title="Latest OOS alerts"
+                description="Shelf gaps that brands need to act on"
+                aside={
+                  <Link
+                    href="/oos"
+                    className="text-xs font-semibold text-brand hover:text-brand-dark"
+                  >
+                    View all alerts
+                  </Link>
+                }
+              />
+              <div className="divide-y divide-slate-100">
+                {state.data.oos.items.slice(0, 5).map((item) => (
+                  <div key={item.id} className="flex items-center gap-3 px-5 py-3.5">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-700">
+                      <AlertTriangle size={16} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-slate-800">
+                        {item.product_name}
+                      </p>
+                      <p className="mt-0.5 truncate text-[11px] text-slate-400">
+                        {item.store_name ?? "Unknown store"}
+                        {item.district ? ` · ${item.district}` : ""}
+                      </p>
+                    </div>
+                    <span className="text-xs text-slate-400">
+                      {relativeTime(item.observed_at)}
+                    </span>
+                  </div>
+                ))}
+                {!state.data.oos.items.length ? (
+                  <p className="p-8 text-center text-sm text-slate-400">
+                    No out-of-stock alerts in the last week.
+                  </p>
+                ) : null}
+              </div>
+            </Card>
+          </div>
         </>
       ) : null}
     </div>

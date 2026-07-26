@@ -21,6 +21,7 @@ class ProductSummary(BaseModel):
     category: Category
     size_label: str
     market_price_etb: float = Field(gt=0)
+    mrp_etb: float | None = Field(default=None, gt=0)
     confidence: int = Field(ge=0, le=100)
     confidence_band: Literal["high", "medium", "low"]
     thumbnail_url: str | None = None

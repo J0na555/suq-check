@@ -10,6 +10,7 @@
       "category": "cooking_oil",
       "size_label": "1 L",
       "market_price_etb": 340,
+      "mrp_etb": 340,
       "confidence": 98,
       "confidence_band": "high",
       "thumbnail_url": null
@@ -21,6 +22,7 @@
       "category": "sugar",
       "size_label": "1 kg",
       "market_price_etb": 205,
+      "mrp_etb": 205,
       "confidence": 91,
       "confidence_band": "high",
       "thumbnail_url": null
@@ -32,6 +34,7 @@
       "category": "soap",
       "size_label": "175 g",
       "market_price_etb": 82,
+      "mrp_etb": 82,
       "confidence": 58,
       "confidence_band": "low",
       "thumbnail_url": null

@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "district": "Bole",
+      "avg_price_etb": 312.5,
+      "avg_mrp_etb": 290.0,
+      "vs_mrp_pct": 7.8,
+      "priced_cells": 420,
+      "oos_cells": 86,
+      "oos_rate_pct": 17.0,
+      "at_mrp_pct": 22.1
+    },
+    {
+      "district": "Yeka",
+      "avg_price_etb": 298.0,
+      "avg_mrp_etb": 290.0,
+      "vs_mrp_pct": 2.8,
+      "priced_cells": 390,
+      "oos_cells": 72,
+      "oos_rate_pct": 15.6,
+      "at_mrp_pct": 28.4
+    },
+    {
+      "district": "Arada",
+      "avg_price_etb": 305.2,
+      "avg_mrp_etb": 290.0,
+      "vs_mrp_pct": 5.2,
+      "priced_cells": 410,
+      "oos_cells": 94,
+      "oos_rate_pct": 18.7,
+      "at_mrp_pct": 19.8
+    }
+  ]
+}

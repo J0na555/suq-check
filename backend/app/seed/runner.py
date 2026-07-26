@@ -26,6 +26,7 @@ from app.seed.generator import (
     SEED_DAYS,
     GeneratedEvidence,
     generate_evidence,
+    generate_oos_evidence,
     generate_store_visit_evidence,
     shelf_price,
 )
@@ -84,6 +85,7 @@ async def seed_database(
     generated.extend(
         generate_store_visit_evidence(catalog, locations, now=moment, days=days)
     )
+    generated.extend(generate_oos_evidence(catalog, locations, now=moment, days=days))
     await _insert_evidence(session, generated)
 
     # The engine only looks back thirty days, so history for the older half of
@@ -134,6 +136,7 @@ async def _upsert_products(
         row.category = product.category
         row.size_value = Decimal(str(product.size_value))
         row.size_unit = product.size_unit
+        row.mrp_etb = Decimal(str(product.base_price_etb))
         row.barcode = product.barcode
         if product.id not in existing:
             session.add(row)
@@ -186,13 +189,14 @@ async def _insert_evidence(session: AsyncSession, generated: Sequence[GeneratedE
                 "id": uuid4(),
                 "product_id": item.product_id,
                 "store_id": item.store.id,
-                "price_etb": Decimal(str(item.price_etb)),
+                "price_etb": None if item.is_oos else Decimal(str(item.price_etb)),
+                "is_oos": item.is_oos,
                 "source_type": item.source_type,
                 "ocr_confidence": Decimal(str(item.ocr_confidence)),
                 "observed_at": item.observed_at,
                 "status": EvidenceStatus.ACCEPTED,
                 "rejection_reason": None,
-                "raw_payload": {"source": "seed"},
+                "raw_payload": {"source": "seed", "is_oos": item.is_oos},
                 # A report lands in the log a minute after it was observed, so
                 # the dashboard reads as a stream rather than one bulk import.
                 "created_at": item.observed_at + timedelta(minutes=1),

@@ -34,7 +34,11 @@ function EvidenceRow({ item }: { item: EvidenceLogItem }) {
         {item.source_type.replaceAll("_", " ")}
       </td>
       <td className="whitespace-nowrap px-5 py-4 font-semibold text-slate-700">
-        {item.price_etb.toLocaleString()} ETB
+        {item.is_oos
+          ? "OOS"
+          : item.price_etb != null
+            ? `${item.price_etb.toLocaleString()} ETB`
+            : "—"}
       </td>
       <td className="px-5 py-4">
         <StatusBadge status={item.status} />
@@ -110,9 +114,9 @@ export function EvidenceDashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Verification pipeline"
+        eyebrow="Ops & trust"
         title="Evidence log"
-        description="Audit every submitted observation, its source, and the decision made by the verification gate."
+        description="Audit trail behind Market Insights — every observation, source, and verification decision."
         actions={
           <RefreshButton
             refreshing={state.isRefreshing}

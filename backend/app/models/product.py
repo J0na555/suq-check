@@ -33,6 +33,7 @@ class Product(TimestampMixin, Base):
         enum_type(SizeUnit, name="size_unit"),
         nullable=False,
     )
+    mrp_etb: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
     barcode: Mapped[str | None] = mapped_column(String(64), unique=True)
     thumbnail: Mapped[bytes | None] = mapped_column(LargeBinary)
 

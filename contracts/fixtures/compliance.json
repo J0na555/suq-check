@@ -1,0 +1,41 @@
+{
+  "summary": {
+    "shops_priced": 240,
+    "at_mrp": 58,
+    "above_mrp": 162,
+    "below_mrp": 20,
+    "at_pct": 24.2,
+    "above_pct": 67.5,
+    "below_pct": 8.3
+  },
+  "items": [
+    {
+      "product_id": "11111111-1111-4111-8111-111111111111",
+      "product_name": "Hayat Cooking Oil 1L",
+      "brand": "Hayat",
+      "category": "cooking_oil",
+      "mrp_etb": 340,
+      "market_price_etb": 368,
+      "delta_pct": 8.2,
+      "band": "above",
+      "store_count": 18,
+      "at_mrp": 3,
+      "above_mrp": 14,
+      "below_mrp": 1
+    },
+    {
+      "product_id": "22222222-2222-4222-8222-222222222222",
+      "product_name": "Shega White Sugar 1kg",
+      "brand": "Shega",
+      "category": "sugar",
+      "mrp_etb": 205,
+      "market_price_etb": 201,
+      "delta_pct": -2.0,
+      "band": "at",
+      "store_count": 22,
+      "at_mrp": 16,
+      "above_mrp": 4,
+      "below_mrp": 2
+    }
+  ]
+}

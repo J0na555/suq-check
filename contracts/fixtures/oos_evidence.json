@@ -1,0 +1,12 @@
+{
+  "decision": {
+    "id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+    "product_id": "11111111-1111-4111-8111-111111111111",
+    "product_name": "Hayat Cooking Oil 1L",
+    "price_etb": null,
+    "is_oos": true,
+    "source_type": "store_visit",
+    "status": "accepted",
+    "reason": "Out-of-stock flag accepted; no price to gate."
+  }
+}

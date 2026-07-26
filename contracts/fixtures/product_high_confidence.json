@@ -5,6 +5,7 @@
   "category": "cooking_oil",
   "size_label": "1 L",
   "market_price_etb": 340,
+  "mrp_etb": 340,
   "confidence": 98,
   "confidence_band": "high",
   "thumbnail_url": null,

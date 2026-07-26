@@ -1,6 +1,7 @@
 "use client";
 
 import { apiFetch, type TrendsResponse } from "@/api/client";
+import { CategoryFilter } from "@/components/category-filter";
 import { PriceTrendChart } from "@/components/charts";
 import {
   Card,
@@ -22,20 +23,24 @@ const periods = [7, 30, 90] as const;
 
 export function TrendsDashboard() {
   const [period, setPeriod] = useState<(typeof periods)[number]>(7);
+  const [category, setCategory] = useState("");
   const loader = useCallback(
-    (signal: AbortSignal) =>
-      apiFetch<TrendsResponse>(
-        `/api/analytics/trends?period_days=${period}`,
+    (signal: AbortSignal) => {
+      const params = new URLSearchParams({ period_days: String(period) });
+      if (category) params.set("category", category);
+      return apiFetch<TrendsResponse>(
+        `/api/analytics/trends?${params}`,
         signal,
-      ),
-    [period],
+      );
+    },
+    [period, category],
   );
   const state = useLiveData(loader, 60_000);
 
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Price intelligence"
+        eyebrow="Market Insights"
         title="Market trends"
         description="Compare market-wide price estimates and identify the products moving fastest across the reporting period."
         actions={
@@ -46,6 +51,8 @@ export function TrendsDashboard() {
           />
         }
       />
+
+      <CategoryFilter value={category} onChange={setCategory} />
 
       {state.error ? (
         <ErrorNotice message={state.error} retry={state.refresh} />

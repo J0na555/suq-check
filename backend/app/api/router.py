@@ -1,31 +1,48 @@
+import csv
+import io
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import datetime, timezone
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile, status
+from fastapi.responses import StreamingResponse
 
 from app.api.deps import RATE_LIMIT_RESPONSES, DeviceIdHeader, RateLimited, SessionDep
 from app.api.uploads import UPLOAD_RESPONSES, read_image
 from app.config import get_settings
 from app.fixtures import load_fixture
 from app.repositories import (
+    load_competitors,
+    load_compliance,
+    load_districts,
     load_evidence_log,
     load_nearby_stores,
+    load_oos_alerts,
     load_product_detail,
     load_pulse,
     load_store_detail,
     load_trends,
     load_unit_economics,
+    market_insights_csv_rows,
     search_products,
 )
-from app.schemas.analytics import TrendsResponse, UnitEconomicsResponse
+from app.schemas.analytics import (
+    CompetitorsResponse,
+    ComplianceResponse,
+    DistrictsResponse,
+    OosResponse,
+    TrendsResponse,
+    UnitEconomicsResponse,
+)
 from app.schemas.common import Category, ErrorResponse, EvidenceStatus, HealthResponse
 from app.schemas.evidence import (
     EvidenceLogResponse,
     ManualEvidenceRequest,
     ManualEvidenceResponse,
+    OosEvidenceRequest,
+    OosEvidenceResponse,
     PriceListUploadResponse,
     ProductIdentification,
     ReceiptUploadResponse,
@@ -42,6 +59,7 @@ from app.services.ingest import (
     MissingReference,
     identify_from_image,
     ingest_manual_report,
+    ingest_oos_report,
     ingest_price_list,
     ingest_receipt,
     ingest_shelf_tag,
@@ -99,6 +117,7 @@ async def list_products(
     session: SessionDep,
     q: Annotated[str | None, Query(max_length=100)] = None,
     category: Category | None = None,
+    brand: Annotated[str | None, Query(max_length=100)] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> ProductListResponse:
@@ -107,6 +126,7 @@ async def list_products(
             session,
             query=q,
             category=category,
+            brand=brand,
             limit=limit,
             offset=offset,
         )
@@ -123,6 +143,9 @@ async def list_products(
         ]
     if category:
         items = [item for item in items if item.category == category]
+    if brand:
+        needle = brand.casefold()
+        items = [item for item in items if item.brand.casefold() == needle]
 
     return ProductListResponse(
         total=len(items),
@@ -348,6 +371,32 @@ async def submit_manual_evidence(
 
 
 @router.post(
+    "/api/evidence/oos",
+    response_model=OosEvidenceResponse,
+    tags=["evidence"],
+    dependencies=[RateLimited],
+    responses={
+        **RATE_LIMIT_RESPONSES,
+        **not_found("The report names a product or store that does not exist."),
+    },
+)
+async def submit_oos_evidence(
+    payload: OosEvidenceRequest,
+    session: SessionDep,
+    device_id: DeviceIdHeader = None,
+) -> OosEvidenceResponse:
+    if session is None:
+        return OosEvidenceResponse.model_validate(load_fixture("oos_evidence.json"))
+
+    try:
+        response = await ingest_oos_report(session, payload, device_id=device_id)
+    except MissingReference as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+    await session.commit()
+    return response
+
+
+@router.post(
     "/api/scan/identify",
     response_model=ProductIdentification,
     tags=["scan"],
@@ -373,12 +422,16 @@ async def identify_product(
 async def get_trends(
     session: SessionDep,
     period_days: Annotated[int, Query(ge=2, le=90)] = 7,
+    category: Category | None = None,
 ) -> TrendsResponse:
     if session is not None:
-        return await load_trends(session, period_days=period_days)
+        return await load_trends(session, period_days=period_days, category=category)
 
     result = TrendsResponse.model_validate(load_fixture("trends.json"))
     result.period_days = period_days
+    if category:
+        # Fixture trends lack category tags; keep the demo chart intact.
+        pass
     return result
 
 
@@ -397,4 +450,95 @@ async def get_unit_economics(
     result = UnitEconomicsResponse.model_validate(load_fixture("unit_economics.json"))
     result.period_days = period_days
     return result
+
+
+@router.get(
+    "/api/analytics/compliance",
+    response_model=ComplianceResponse,
+    tags=["analytics"],
+)
+async def get_compliance(
+    session: SessionDep,
+    category: Category | None = None,
+    brand: Annotated[str | None, Query(max_length=100)] = None,
+) -> ComplianceResponse:
+    if session is not None:
+        return await load_compliance(session, category=category, brand=brand)
+    return ComplianceResponse.model_validate(load_fixture("compliance.json"))
+
+
+@router.get(
+    "/api/analytics/districts",
+    response_model=DistrictsResponse,
+    tags=["analytics"],
+)
+async def get_districts(
+    session: SessionDep,
+    category: Category | None = None,
+    product_id: UUID | None = None,
+) -> DistrictsResponse:
+    if session is not None:
+        return await load_districts(session, category=category, product_id=product_id)
+    return DistrictsResponse.model_validate(load_fixture("districts.json"))
+
+
+@router.get("/api/analytics/oos", response_model=OosResponse, tags=["analytics"])
+async def get_oos_alerts(
+    session: SessionDep,
+    category: Category | None = None,
+    days: Annotated[int, Query(ge=1, le=90)] = 7,
+) -> OosResponse:
+    if session is not None:
+        return await load_oos_alerts(session, category=category, days=days)
+    result = OosResponse.model_validate(load_fixture("oos.json"))
+    result.period_days = days
+    return result
+
+
+@router.get(
+    "/api/analytics/competitors",
+    response_model=CompetitorsResponse,
+    tags=["analytics"],
+)
+async def get_competitors(
+    session: SessionDep,
+    category: Category | None = None,
+) -> CompetitorsResponse:
+    if session is not None:
+        return await load_competitors(session, category=category)
+    return CompetitorsResponse.model_validate(load_fixture("competitors.json"))
+
+
+@router.get("/api/exports/market-insights.csv", tags=["exports"])
+async def export_market_insights(
+    session: SessionDep,
+    category: Category | None = None,
+    brand: Annotated[str | None, Query(max_length=100)] = None,
+    level: Annotated[Literal["district", "store"], Query()] = "district",
+) -> StreamingResponse:
+    if session is None:
+        rows = load_fixture("market_insights_export.json")["rows"]
+    else:
+        rows = await market_insights_csv_rows(
+            session,
+            category=category,
+            brand=brand,
+            level=level,
+        )
+
+    buffer = io.StringIO()
+    if rows:
+        writer = csv.DictWriter(buffer, fieldnames=list(rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(rows)
+    else:
+        buffer.write("product,brand,category\n")
+
+    buffer.seek(0)
+    filename = f"suqcheck-market-insights-{level}.csv"
+    return StreamingResponse(
+        iter([buffer.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 

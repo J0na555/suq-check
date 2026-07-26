@@ -89,6 +89,7 @@ def product_summary(product: Product, price_etb: Decimal, confidence: int) -> Pr
         category=product.category.value,
         size_label=size_label(product.size_value, product.size_unit),
         market_price_etb=float(price_etb),
+        mrp_etb=None if product.mrp_etb is None else float(product.mrp_etb),
         confidence=confidence,
         confidence_band=band_for(confidence),
         thumbnail_url=None,

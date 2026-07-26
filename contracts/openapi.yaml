@@ -70,6 +70,15 @@ paths:
             type: string
           - type: 'null'
           title: Category
+      - name: brand
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Brand
       - name: limit
         in: query
         required: false
@@ -524,6 +533,55 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /api/evidence/oos:
+    post:
+      tags:
+      - evidence
+      summary: Submit Oos Evidence
+      operationId: submit_oos_evidence_api_evidence_oos_post
+      parameters:
+      - name: X-Device-Id
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Anonymous device identifier used for rate limiting.
+          title: X-Device-Id
+        description: Anonymous device identifier used for rate limiting.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OosEvidenceRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OosEvidenceResponse'
+        '429':
+          description: The per-device or per-network upload limit was reached. The
+            `Retry-After` header carries the wait in seconds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: The report names a product or store that does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
   /api/scan/identify:
     post:
       tags:
@@ -601,6 +659,29 @@ paths:
           minimum: 2
           default: 7
           title: Period Days
+      - name: category
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - cooking_oil
+            - sugar
+            - rice
+            - flour
+            - salt
+            - pasta
+            - coffee
+            - tea
+            - milk
+            - soap
+            - detergent
+            - toothpaste
+            - shampoo
+            - bottled_water
+            type: string
+          - type: 'null'
+          title: Category
       responses:
         '200':
           description: Successful Response
@@ -637,6 +718,266 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnitEconomicsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/analytics/compliance:
+    get:
+      tags:
+      - analytics
+      summary: Get Compliance
+      operationId: get_compliance_api_analytics_compliance_get
+      parameters:
+      - name: category
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - cooking_oil
+            - sugar
+            - rice
+            - flour
+            - salt
+            - pasta
+            - coffee
+            - tea
+            - milk
+            - soap
+            - detergent
+            - toothpaste
+            - shampoo
+            - bottled_water
+            type: string
+          - type: 'null'
+          title: Category
+      - name: brand
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Brand
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/analytics/districts:
+    get:
+      tags:
+      - analytics
+      summary: Get Districts
+      operationId: get_districts_api_analytics_districts_get
+      parameters:
+      - name: category
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - cooking_oil
+            - sugar
+            - rice
+            - flour
+            - salt
+            - pasta
+            - coffee
+            - tea
+            - milk
+            - soap
+            - detergent
+            - toothpaste
+            - shampoo
+            - bottled_water
+            type: string
+          - type: 'null'
+          title: Category
+      - name: product_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Product Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DistrictsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/analytics/oos:
+    get:
+      tags:
+      - analytics
+      summary: Get Oos Alerts
+      operationId: get_oos_alerts_api_analytics_oos_get
+      parameters:
+      - name: category
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - cooking_oil
+            - sugar
+            - rice
+            - flour
+            - salt
+            - pasta
+            - coffee
+            - tea
+            - milk
+            - soap
+            - detergent
+            - toothpaste
+            - shampoo
+            - bottled_water
+            type: string
+          - type: 'null'
+          title: Category
+      - name: days
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 90
+          minimum: 1
+          default: 7
+          title: Days
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OosResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/analytics/competitors:
+    get:
+      tags:
+      - analytics
+      summary: Get Competitors
+      operationId: get_competitors_api_analytics_competitors_get
+      parameters:
+      - name: category
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - cooking_oil
+            - sugar
+            - rice
+            - flour
+            - salt
+            - pasta
+            - coffee
+            - tea
+            - milk
+            - soap
+            - detergent
+            - toothpaste
+            - shampoo
+            - bottled_water
+            type: string
+          - type: 'null'
+          title: Category
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitorsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/exports/market-insights.csv:
+    get:
+      tags:
+      - exports
+      summary: Export Market Insights
+      operationId: export_market_insights_api_exports_market_insights_csv_get
+      parameters:
+      - name: category
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - cooking_oil
+            - sugar
+            - rice
+            - flour
+            - salt
+            - pasta
+            - coffee
+            - tea
+            - milk
+            - soap
+            - detergent
+            - toothpaste
+            - shampoo
+            - bottled_water
+            type: string
+          - type: 'null'
+          title: Category
+      - name: brand
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Brand
+      - name: level
+        in: query
+        required: false
+        schema:
+          enum:
+          - district
+          - store
+          type: string
+          default: district
+          title: Level
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
         '422':
           description: Validation Error
           content:
@@ -695,6 +1036,253 @@ components:
       required:
       - image
       title: Body_upload_shelf_photo_api_evidence_shelf_post
+    CompetitorRow:
+      properties:
+        product_id:
+          type: string
+          format: uuid
+          title: Product Id
+        product_name:
+          type: string
+          title: Product Name
+        brand:
+          type: string
+          title: Brand
+        category:
+          type: string
+          enum:
+          - cooking_oil
+          - sugar
+          - rice
+          - flour
+          - salt
+          - pasta
+          - coffee
+          - tea
+          - milk
+          - soap
+          - detergent
+          - toothpaste
+          - shampoo
+          - bottled_water
+          title: Category
+        market_price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Market Price Etb
+        mrp_etb:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Mrp Etb
+        vs_category_median_pct:
+          type: number
+          title: Vs Category Median Pct
+        change_pct:
+          type: number
+          title: Change Pct
+        direction:
+          type: string
+          enum:
+          - up
+          - down
+          - stable
+          title: Direction
+        store_count:
+          type: integer
+          minimum: 0.0
+          title: Store Count
+        confidence:
+          type: integer
+          maximum: 100.0
+          minimum: 0.0
+          title: Confidence
+      type: object
+      required:
+      - product_id
+      - product_name
+      - brand
+      - category
+      - market_price_etb
+      - vs_category_median_pct
+      - change_pct
+      - direction
+      - store_count
+      - confidence
+      title: CompetitorRow
+    CompetitorsResponse:
+      properties:
+        category:
+          anyOf:
+          - type: string
+            enum:
+            - cooking_oil
+            - sugar
+            - rice
+            - flour
+            - salt
+            - pasta
+            - coffee
+            - tea
+            - milk
+            - soap
+            - detergent
+            - toothpaste
+            - shampoo
+            - bottled_water
+          - type: 'null'
+          title: Category
+        category_median_etb:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Category Median Etb
+        items:
+          items:
+            $ref: '#/components/schemas/CompetitorRow'
+          type: array
+          title: Items
+      type: object
+      required:
+      - items
+      title: CompetitorsResponse
+    ComplianceResponse:
+      properties:
+        summary:
+          $ref: '#/components/schemas/ComplianceSummary'
+        items:
+          items:
+            $ref: '#/components/schemas/ComplianceRow'
+          type: array
+          title: Items
+      type: object
+      required:
+      - summary
+      - items
+      title: ComplianceResponse
+    ComplianceRow:
+      properties:
+        product_id:
+          type: string
+          format: uuid
+          title: Product Id
+        product_name:
+          type: string
+          title: Product Name
+        brand:
+          type: string
+          title: Brand
+        category:
+          type: string
+          enum:
+          - cooking_oil
+          - sugar
+          - rice
+          - flour
+          - salt
+          - pasta
+          - coffee
+          - tea
+          - milk
+          - soap
+          - detergent
+          - toothpaste
+          - shampoo
+          - bottled_water
+          title: Category
+        mrp_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Mrp Etb
+        market_price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Market Price Etb
+        delta_pct:
+          type: number
+          title: Delta Pct
+        band:
+          type: string
+          enum:
+          - at
+          - above
+          - below
+          title: Band
+        store_count:
+          type: integer
+          minimum: 0.0
+          title: Store Count
+        at_mrp:
+          type: integer
+          minimum: 0.0
+          title: At Mrp
+        above_mrp:
+          type: integer
+          minimum: 0.0
+          title: Above Mrp
+        below_mrp:
+          type: integer
+          minimum: 0.0
+          title: Below Mrp
+      type: object
+      required:
+      - product_id
+      - product_name
+      - brand
+      - category
+      - mrp_etb
+      - market_price_etb
+      - delta_pct
+      - band
+      - store_count
+      - at_mrp
+      - above_mrp
+      - below_mrp
+      title: ComplianceRow
+    ComplianceSummary:
+      properties:
+        shops_priced:
+          type: integer
+          minimum: 0.0
+          title: Shops Priced
+        at_mrp:
+          type: integer
+          minimum: 0.0
+          title: At Mrp
+        above_mrp:
+          type: integer
+          minimum: 0.0
+          title: Above Mrp
+        below_mrp:
+          type: integer
+          minimum: 0.0
+          title: Below Mrp
+        at_pct:
+          type: number
+          maximum: 100.0
+          minimum: 0.0
+          title: At Pct
+        above_pct:
+          type: number
+          maximum: 100.0
+          minimum: 0.0
+          title: Above Pct
+        below_pct:
+          type: number
+          maximum: 100.0
+          minimum: 0.0
+          title: Below Pct
+      type: object
+      required:
+      - shops_priced
+      - at_mrp
+      - above_mrp
+      - below_mrp
+      - at_pct
+      - above_pct
+      - below_pct
+      title: ComplianceSummary
     ConfidenceBreakdown:
       properties:
         score:
@@ -789,6 +1377,65 @@ components:
       - unit
       - source
       title: CostBenchmark
+    DistrictRow:
+      properties:
+        district:
+          type: string
+          title: District
+        avg_price_etb:
+          type: number
+          exclusiveMinimum: 0.0
+          title: Avg Price Etb
+        avg_mrp_etb:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Avg Mrp Etb
+        vs_mrp_pct:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Vs Mrp Pct
+        priced_cells:
+          type: integer
+          minimum: 0.0
+          title: Priced Cells
+        oos_cells:
+          type: integer
+          minimum: 0.0
+          title: Oos Cells
+        oos_rate_pct:
+          type: number
+          maximum: 100.0
+          minimum: 0.0
+          title: Oos Rate Pct
+        at_mrp_pct:
+          anyOf:
+          - type: number
+            maximum: 100.0
+            minimum: 0.0
+          - type: 'null'
+          title: At Mrp Pct
+      type: object
+      required:
+      - district
+      - avg_price_etb
+      - priced_cells
+      - oos_cells
+      - oos_rate_pct
+      title: DistrictRow
+    DistrictsResponse:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/DistrictRow'
+          type: array
+          title: Items
+      type: object
+      required:
+      - items
+      title: DistrictsResponse
     ErrorResponse:
       properties:
         detail:
@@ -815,9 +1462,15 @@ components:
           type: string
           title: Product Name
         price_etb:
-          type: number
-          exclusiveMinimum: 0.0
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
           title: Price Etb
+        is_oos:
+          type: boolean
+          title: Is Oos
+          default: false
         source_type:
           type: string
           enum:
@@ -842,7 +1495,6 @@ components:
       required:
       - id
       - product_name
-      - price_etb
       - source_type
       - status
       - reason
@@ -862,9 +1514,15 @@ components:
           - type: 'null'
           title: Store Name
         price_etb:
-          type: number
-          exclusiveMinimum: 0.0
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
           title: Price Etb
+        is_oos:
+          type: boolean
+          title: Is Oos
+          default: false
         source_type:
           type: string
           enum:
@@ -899,7 +1557,6 @@ components:
       required:
       - id
       - product_name
-      - price_etb
       - source_type
       - status
       - observed_at
@@ -1149,6 +1806,129 @@ components:
       - market_price_etb
       - items
       title: NearbyStoresResponse
+    OosAlert:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        product_id:
+          type: string
+          format: uuid
+          title: Product Id
+        product_name:
+          type: string
+          title: Product Name
+        brand:
+          type: string
+          title: Brand
+        category:
+          type: string
+          enum:
+          - cooking_oil
+          - sugar
+          - rice
+          - flour
+          - salt
+          - pasta
+          - coffee
+          - tea
+          - milk
+          - soap
+          - detergent
+          - toothpaste
+          - shampoo
+          - bottled_water
+          title: Category
+        store_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Store Id
+        store_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Store Name
+        district:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: District
+        observed_at:
+          type: string
+          format: date-time
+          title: Observed At
+        source_type:
+          type: string
+          title: Source Type
+      type: object
+      required:
+      - id
+      - product_id
+      - product_name
+      - brand
+      - category
+      - observed_at
+      - source_type
+      title: OosAlert
+    OosEvidenceRequest:
+      properties:
+        product_id:
+          type: string
+          format: uuid
+          title: Product Id
+        store_id:
+          type: string
+          format: uuid
+          title: Store Id
+        observed_at:
+          type: string
+          format: date-time
+          title: Observed At
+        source_type:
+          type: string
+          enum:
+          - store_visit
+          - community
+          - shelf_photo
+          title: Source Type
+          default: store_visit
+      type: object
+      required:
+      - product_id
+      - store_id
+      - observed_at
+      title: OosEvidenceRequest
+    OosEvidenceResponse:
+      properties:
+        decision:
+          $ref: '#/components/schemas/EvidenceDecision'
+      type: object
+      required:
+      - decision
+      title: OosEvidenceResponse
+    OosResponse:
+      properties:
+        period_days:
+          type: integer
+          title: Period Days
+        total:
+          type: integer
+          minimum: 0.0
+          title: Total
+        items:
+          items:
+            $ref: '#/components/schemas/OosAlert'
+          type: array
+          title: Items
+      type: object
+      required:
+      - period_days
+      - total
+      - items
+      title: OosResponse
     PriceListExtraction:
       properties:
         store_id:
@@ -1232,6 +2012,12 @@ components:
           type: number
           exclusiveMinimum: 0.0
           title: Market Price Etb
+        mrp_etb:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Mrp Etb
         confidence:
           type: integer
           maximum: 100.0
@@ -1441,6 +2227,12 @@ components:
           type: number
           exclusiveMinimum: 0.0
           title: Market Price Etb
+        mrp_etb:
+          anyOf:
+          - type: number
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Mrp Etb
         confidence:
           type: integer
           maximum: 100.0
@@ -1524,6 +2316,24 @@ components:
           maximum: 100.0
           minimum: 0.0
           title: Average Confidence
+        mrp_compliance_pct:
+          type: number
+          maximum: 100.0
+          minimum: 0.0
+          title: Mrp Compliance Pct
+        oos_rate_pct:
+          type: number
+          maximum: 100.0
+          minimum: 0.0
+          title: Oos Rate Pct
+        categories_covered:
+          type: integer
+          minimum: 0.0
+          title: Categories Covered
+        active_oos_alerts:
+          type: integer
+          minimum: 0.0
+          title: Active Oos Alerts
       type: object
       required:
       - verified_prices_today
@@ -1531,6 +2341,10 @@ components:
       - stores_reporting
       - new_receipts_today
       - average_confidence
+      - mrp_compliance_pct
+      - oos_rate_pct
+      - categories_covered
+      - active_oos_alerts
       title: PulseMetrics
     PulseMover:
       properties:

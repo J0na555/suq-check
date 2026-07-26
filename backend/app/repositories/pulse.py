@@ -19,6 +19,7 @@ from app.models.price import PriceEstimate
 from app.models.product import Product
 from app.models.store import Store
 from app.repositories.analytics import PriceChange, price_changes
+from app.repositories.insights import insights_summary_metrics
 from app.repositories.stores import PRICE_RATIO, store_prices_against_market
 from app.schemas.pulse import PulseMetrics, PulseMover, PulseResponse
 
@@ -76,6 +77,7 @@ async def _metrics(session: AsyncSession, *, now: datetime) -> PulseMetrics:
         .select_from(Evidence)
         .where(
             Evidence.status == EvidenceStatus.ACCEPTED,
+            Evidence.is_oos.is_(False),
             Evidence.observed_at >= since,
         )
     )
@@ -99,6 +101,9 @@ async def _metrics(session: AsyncSession, *, now: datetime) -> PulseMetrics:
     average_confidence = await session.scalar(
         select(func.avg(PriceEstimate.confidence)).where(_MARKET_ESTIMATE)
     )
+    compliance_pct, oos_rate_pct, categories_covered, active_oos = (
+        await insights_summary_metrics(session, now=now)
+    )
 
     return PulseMetrics(
         verified_prices_today=verified_today or 0,
@@ -106,6 +111,10 @@ async def _metrics(session: AsyncSession, *, now: datetime) -> PulseMetrics:
         stores_reporting=stores_reporting or 0,
         new_receipts_today=new_receipts_today or 0,
         average_confidence=round(float(average_confidence or 0)),
+        mrp_compliance_pct=compliance_pct,
+        oos_rate_pct=oos_rate_pct,
+        categories_covered=categories_covered,
+        active_oos_alerts=active_oos,
     )
 
 

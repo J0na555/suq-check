@@ -1,0 +1,26 @@
+{
+  "rows": [
+    {
+      "product": "Hayat Cooking Oil 1L",
+      "brand": "Hayat",
+      "category": "cooking_oil",
+      "district": "Bole",
+      "mrp_etb": 340,
+      "avg_price_etb": 362.5,
+      "delta_pct": 6.6,
+      "band": "above",
+      "shops": 8
+    },
+    {
+      "product": "Shega White Sugar 1kg",
+      "brand": "Shega",
+      "category": "sugar",
+      "district": "Yeka",
+      "mrp_etb": 205,
+      "avg_price_etb": 203.0,
+      "delta_pct": -1.0,
+      "band": "at",
+      "shops": 11
+    }
+  ]
+}

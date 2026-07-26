@@ -172,6 +172,7 @@ async def submit_evidence(
         product_id=product.id,
         store_id=store_id,
         price_etb=Decimal(str(price_etb)),
+        is_oos=False,
         source_type=source_type,
         ocr_confidence=Decimal(str(ocr_confidence)),
         observed_at=observed_at,
@@ -192,4 +193,45 @@ async def submit_evidence(
             now=now if now is not None else datetime.now(timezone.utc),
         )
 
+    return evidence, decision
+
+
+async def submit_oos_evidence(
+    session: AsyncSession,
+    *,
+    product: Product,
+    store_id: UUID,
+    source_type: EvidenceSource,
+    observed_at: datetime,
+    ocr_confidence: float = 1.0,
+    raw_payload: dict[str, Any] | None = None,
+    thumbnail: bytes | None = None,
+    now: datetime | None = None,
+) -> tuple[Evidence, Decision]:
+    """Record a verified out-of-stock observation and clear that store's estimate."""
+    decision = Decision(
+        status=EvidenceStatus.ACCEPTED,
+        reason="Out-of-stock flag accepted; no price to gate.",
+    )
+    evidence = Evidence(
+        product_id=product.id,
+        store_id=store_id,
+        price_etb=None,
+        is_oos=True,
+        source_type=source_type,
+        ocr_confidence=Decimal(str(ocr_confidence)),
+        observed_at=observed_at,
+        status=decision.status,
+        rejection_reason=None,
+        raw_payload={**(raw_payload or {}), "is_oos": True},
+        thumbnail=thumbnail,
+    )
+    session.add(evidence)
+    await session.flush()
+
+    await recompute_product(
+        session,
+        product.id,
+        now=now if now is not None else datetime.now(timezone.utc),
+    )
     return evidence, decision

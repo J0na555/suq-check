@@ -4,7 +4,11 @@
     "products_covered": 127,
     "stores_reporting": 46,
     "new_receipts_today": 183,
-    "average_confidence": 94
+    "average_confidence": 94,
+    "mrp_compliance_pct": 24.2,
+    "oos_rate_pct": 17.1,
+    "categories_covered": 14,
+    "active_oos_alerts": 186
   },
   "movers": [
     {

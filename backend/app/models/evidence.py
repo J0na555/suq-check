@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import (
     JSON,
+    Boolean,
     CheckConstraint,
     DateTime,
     ForeignKey,
@@ -26,7 +27,10 @@ JSON_DOCUMENT = JSON().with_variant(JSONB, "postgresql")
 class Evidence(TimestampMixin, Base):
     __tablename__ = "evidence"
     __table_args__ = (
-        CheckConstraint("price_etb > 0", name="positive_price"),
+        CheckConstraint(
+            "(is_oos AND price_etb IS NULL) OR (NOT is_oos AND price_etb > 0)",
+            name="evidence_price_or_oos",
+        ),
         CheckConstraint(
             "ocr_confidence >= 0 AND ocr_confidence <= 1",
             name="ocr_confidence_range",
@@ -34,6 +38,7 @@ class Evidence(TimestampMixin, Base):
         Index("ix_evidence_product_observed", "product_id", "observed_at"),
         Index("ix_evidence_store_observed", "store_id", "observed_at"),
         Index("ix_evidence_status", "status"),
+        Index("ix_evidence_is_oos", "is_oos"),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
@@ -44,7 +49,8 @@ class Evidence(TimestampMixin, Base):
     store_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("store.id", ondelete="SET NULL"),
     )
-    price_etb: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+    price_etb: Mapped[Decimal | None] = mapped_column(Numeric(12, 2))
+    is_oos: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     source_type: Mapped[EvidenceSource] = mapped_column(
         enum_type(EvidenceSource, name="evidence_source"),
         nullable=False,
@@ -67,4 +73,3 @@ class Evidence(TimestampMixin, Base):
         default=dict,
     )
     thumbnail: Mapped[bytes | None] = mapped_column(LargeBinary)
-

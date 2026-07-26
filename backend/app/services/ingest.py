@@ -27,6 +27,8 @@ from app.schemas.evidence import (
     ExtractedLineItem,
     ManualEvidenceRequest,
     ManualEvidenceResponse,
+    OosEvidenceRequest,
+    OosEvidenceResponse,
     PriceListExtraction,
     PriceListUploadResponse,
     ProductIdentification,
@@ -48,7 +50,7 @@ from app.services.ocr import (
     identify_product,
     pop_usage,
 )
-from app.services.verification import Decision, submit_evidence
+from app.services.verification import Decision, submit_evidence, submit_oos_evidence
 
 
 class MissingReference(LookupError):
@@ -277,6 +279,33 @@ async def ingest_manual_report(
     return ManualEvidenceResponse(decision=_decision(evidence, product, decision))
 
 
+async def ingest_oos_report(
+    session: AsyncSession,
+    request: OosEvidenceRequest,
+    *,
+    device_id: str | None = None,
+    now: datetime | None = None,
+) -> OosEvidenceResponse:
+    moment = now or datetime.now(timezone.utc)
+    product = await session.get(Product, request.product_id)
+    if product is None:
+        raise MissingReference("Product not found")
+    store = await session.get(Store, request.store_id)
+    if store is None:
+        raise MissingReference("Store not found")
+
+    evidence, decision = await submit_oos_evidence(
+        session,
+        product=product,
+        store_id=store.id,
+        source_type=EvidenceSource(request.source_type),
+        observed_at=min(request.observed_at, moment),
+        raw_payload=_payload(device_id, store_name=store.name),
+        now=moment,
+    )
+    return OosEvidenceResponse(decision=_decision(evidence, product, decision))
+
+
 async def identify_from_image(session: AsyncSession, image: Image) -> ProductIdentification:
     seen = await identify_product(image.data, image.mime_type)
     match = await resolve_text(session, seen.canonical_name, source="scan", allow_gemini=False)
@@ -311,7 +340,8 @@ def _decision(evidence: Evidence, product: Product, decision: Decision) -> Evide
         id=evidence.id,
         product_id=product.id,
         product_name=product.canonical_name,
-        price_etb=float(evidence.price_etb),
+        price_etb=None if evidence.price_etb is None else float(evidence.price_etb),
+        is_oos=evidence.is_oos,
         source_type=evidence.source_type.value,
         status=decision.status.value,
         reason=decision.reason,

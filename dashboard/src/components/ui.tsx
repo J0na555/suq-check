@@ -108,12 +108,39 @@ export function MetricCard({
 export function StatusBadge({
   status,
 }: {
-  status: "accepted" | "pending" | "rejected";
+  status:
+    | "accepted"
+    | "pending"
+    | "rejected"
+    | "high"
+    | "medium"
+    | "low"
+    | "at"
+    | "above"
+    | "below";
 }) {
   const styles = {
     accepted: "bg-emerald-50 text-emerald-700 ring-emerald-600/10",
     pending: "bg-amber-50 text-amber-700 ring-amber-600/10",
     rejected: "bg-red-50 text-red-700 ring-red-600/10",
+    high: "bg-emerald-50 text-emerald-700 ring-emerald-600/10",
+    medium: "bg-amber-50 text-amber-700 ring-amber-600/10",
+    low: "bg-red-50 text-red-700 ring-red-600/10",
+    at: "bg-emerald-50 text-emerald-700 ring-emerald-600/10",
+    above: "bg-red-50 text-red-700 ring-red-600/10",
+    below: "bg-blue-50 text-blue-700 ring-blue-600/10",
+  };
+
+  const labels: Record<typeof status, string> = {
+    accepted: "accepted",
+    pending: "pending",
+    rejected: "rejected",
+    high: "high",
+    medium: "medium",
+    low: "low",
+    at: "at MRP",
+    above: "above MRP",
+    below: "below MRP",
   };
 
   return (
@@ -121,7 +148,7 @@ export function StatusBadge({
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold capitalize ring-1 ring-inset ${styles[status]}`}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {status}
+      {labels[status]}
     </span>
   );
 }

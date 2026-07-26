@@ -311,6 +311,8 @@ async def load_observations(
         select(Evidence).where(
             Evidence.product_id == product_id,
             Evidence.status == EvidenceStatus.ACCEPTED,
+            Evidence.is_oos.is_(False),
+            Evidence.price_etb.is_not(None),
             Evidence.observed_at > cutoff,
         )
     )
@@ -324,6 +326,7 @@ async def load_observations(
                 store_id=row.store_id,
             )
             for row in rows
+            if row.price_etb is not None
         ),
         now,
         lookback_days=lookback_days,
