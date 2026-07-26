@@ -145,6 +145,34 @@ async def _upsert_products(
     return saved
 
 
+async def backfill_mrp(
+    session: AsyncSession,
+    *,
+    products: Sequence[ProductRow] | None = None,
+) -> int:
+    """Set product.mrp_etb from the catalog CSV without touching evidence."""
+    catalog = list(products) if products is not None else read_products()
+    if not catalog:
+        return 0
+    existing = {
+        row.id: row
+        for row in await session.scalars(
+            select(Product).where(Product.id.in_([product.id for product in catalog]))
+        )
+    }
+    updated = 0
+    for product in catalog:
+        row = existing.get(product.id)
+        if row is None:
+            continue
+        mrp = Decimal(str(product.base_price_etb))
+        if row.mrp_etb != mrp:
+            row.mrp_etb = mrp
+            updated += 1
+    await session.flush()
+    return updated
+
+
 async def _remember_catalog_aliases(
     session: AsyncSession,
     products: Sequence[ProductRow],

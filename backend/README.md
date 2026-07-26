@@ -27,7 +27,8 @@ Keep both credentials in `.env` and never commit them. The API deliberately
 uses no local SQLAlchemy pool when connected through Neon's PgBouncer endpoint,
 avoiding double pooling.
 
-Create or upgrade the schema:
+Create or upgrade the schema (use the **direct** Neon URL via
+`MIGRATION_DATABASE_URL`):
 
 ```bash
 alembic upgrade head
@@ -39,12 +40,25 @@ Inspect the current revision:
 alembic current
 ```
 
+After Market Insights migrations, backfill manufacturer MRP without reseeding
+evidence:
+
+```bash
+python -m app.seed --mrp-only
+```
+
+**Deploy:** Render must run migrations before the app starts. The Blueprint
+[`render.yaml`](../render.yaml) start command is
+`alembic upgrade head && uvicorn …`. If you change the service outside the
+Blueprint, keep that prefix — shipping new columns without migrating Neon
+returns 500s on `/api/pulse` and `/api/products`.
+
 The initial migration creates `pg_trgm`, the seven planned tables, constraints,
 and the trigram GIN index used for product-alias matching. The second seeds
 `category_price_bounds` for all fourteen categories, which the verification gate
-needs before it can reject anything. `USE_FIXTURES=true` keeps all existing API
-routes on contract fixtures while the database layer is being built. Setting it
-to `false` will only be useful after the read repositories are implemented.
+needs before it can reject anything. The third adds `product.mrp_etb` and
+`evidence.is_oos`. `USE_FIXTURES=true` keeps routes on contract fixtures while
+the database layer is being built.
 
 ## Price engine and verification gate
 
